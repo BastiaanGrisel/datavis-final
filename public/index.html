@@ -1,6 +1,7 @@
 <html>
 <head>
 	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>	
 	<style>
 	html, body {
 		width: 100%;
@@ -106,18 +107,90 @@ function restart() {
 		window.addEventListener('packet_received', function (event) {
 			var packet = event.detail;
 
-			var sourceNode = {"name": packet.link.ip.saddr};
-			var targetNode = {"name": packet.link.ip.daddr};
-			var link 	   = {source: sourceNode, target: targetNode};
+			var sourceNodeId = packet.link.ip.saddr;
+			var targetNodeId = packet.link.ip.daddr;
 
-			if(nodes.indexOf(sourceNode) == -1)
+			// If source node does not exists, add source node
+			sourceNode = _.find(nodes, function(element) {
+				return element['id'] == sourceNodeId;
+			});
+
+			if(!sourceNode)  {
+				sourceNode = {"id": sourceNodeId};
 				nodes.push(sourceNode);
+			}
 
-			if(nodes.indexOf(targetNode) == -1)
+			// If target node does not exists, add source node
+			targetNode = _.find(nodes, function(element) {
+				return element['id'] == targetNodeId;
+			});
+
+			if(!targetNode) {
+				targetNode = {"id": targetNodeId};
 				nodes.push(targetNode);
+			} 
 
-			if(links.indexOf(link) == -1)
-			    links.push(link);
+			// If a link does not exist, add one
+			connection = _.find(links, function(element) {
+				return element['source'] == sourceNode &&
+					   element['target'] == targetNode;
+			});
+
+			if(!connection) 
+				connection = links.push({"source": sourceNode, "target": targetNode});
+
+			// var sourceNodeId = packet.link.ip.saddr;
+			// var targetNodeId = packet.link.ip.daddr;
+
+			// sourceNode = _.find(nodes, function(element) {
+			// 	return element['id'] == sourceNodeId;
+			// });
+
+			// if(!sourceNode) 
+			// 	sourceNode = nodes.push(sourceNode);
+
+			// targetNode = _.find(nodes, function(element) {
+			// 	return element['id'] == targetNodeId;
+			// });
+
+			// if(!targetNode) 
+			// 	targetNode = nodes.push(targetNode);
+
+			// var sourceNode = {"id": packet.link.ip.saddr};
+			// var targetNode = {"id": packet.link.ip.daddr};
+			// var link 	   = {source: sourceNode, target: targetNode};
+
+			// sourceNode = nodes.find(function(element, index) {
+			// 	element['id'] == sourceNodeId;
+			// });
+
+			// targetNode = nodes.find(function(element, index) {
+			// 	element['id'] == targetNodeId;
+			// });
+
+			// link = links.find(function(element, index) {
+			// 	element['source'] == sourceNode;
+			// 	element['target'] = targetNode;
+			// });
+
+			// if(!sourceNode) 
+			// 	sourceNode = nodes.push(sourceNode);
+
+			// if(!targetNode) 
+			// 	targetNode = nodes.push(targetNode);
+
+			// if(!link) 
+			// 	link = links.push(link);
+
+
+			// if(nodes.indexOf(sourceNode) == -1)
+			// 	nodes.push(sourceNode);
+
+			// if(nodes.indexOf(targetNode) == -1)
+			// 	nodes.push(targetNode);
+
+			// if(links.indexOf(link) == -1)
+			//     links.push(link);
 
 			console.log(nodes, links)
 
