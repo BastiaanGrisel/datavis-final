@@ -12,18 +12,20 @@
 </head>
 <body>
 	<script>
+	
 	window.onload = function() {
 		var ws = new WebSocket('ws://localhost:8080');
 
 		ws.onmessage = function (event) {
 			var packet = JSON.parse(event.data);
-
-			var sourceNodeId = packet.link.ip.saddr;
-			var targetNodeId = packet.link.ip.daddr;
-
-			console.log(sourceNodeId, targetNodeId);
+			window.dispatchEvent(new CustomEvent('packet_received', {"detail": packet}));
 		}
+
+		window.addEventListener('packet_received', function (event) {
+			var packet = event.detail;
+		}, false);
 	}
+
 	</script>
 </body>
 </html>
