@@ -10,9 +10,11 @@ var clients = [];
 
 wss.on('connection', function(ws) {
 	clients.push(ws);
+	logClients();
 
 	ws.on('close', function() {
 	    clients.splice(clients.indexOf(ws), 1);
+	    logClients();
 	});	
 });
 
@@ -23,6 +25,6 @@ session.on('packet', function(raw_packet) {
 		clients[client].send(JSON.stringify(packet));
 });
 
-setInterval(function(){
-	console.log("Connected clients: ", clients.length)
-}, 500)
+function logClients() {
+	console.log("Connected clients: ", clients.length);
+}
