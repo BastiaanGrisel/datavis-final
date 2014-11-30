@@ -18,8 +18,8 @@
   <script>
   // Data processing code
   var data = [],
-      sampleinterval = 500, // Polling interval in milliseconds
-      processqueue = [];
+      sampleinterval = 500,
+      numberofsamples = 50;
 
   window.onload = function() {
       var ws = new WebSocket('ws://localhost:8080');
@@ -40,24 +40,22 @@
     var packet = event.detail;
     data_length = packet.link.ip.tcp.data_bytes;
     
-    processqueue.push({"timestamp": currentTime(), "size": data_length});
+    data.push({"timestamp": currentTime(), "size": data_length});
   }, false);
 
   // D3 Visualisation code
-  var samples = 50, // number of samples
-    stack = d3.layout.stack().offset("wiggle"),
-    data = stack([ d3.range(10).map(function(val, index){ return {x: index, y: 10*Math.random()}; }) ]),
+  var stack = d3.layout.stack().offset("wiggle"),
     my_ips = [];
 
     var width = window.innerWidth,
     height = window.innerHeight/2;
 
     var x = d3.scale.linear()
-    .domain([0, samples - 1])
+    .domain([0, numberofsamples - 1])
     .range([0, width]);
 
     var y = d3.scale.linear()
-    .domain([0, 10])
+    .domain([0, 2000])
     .range([height, 0]);
 
     var area = d3.svg.area()
@@ -70,31 +68,47 @@
       .attr("width", width)
       .attr("height", height);
     
-    // Updating visualisation code
 
-    // Process the packets sequentially
-    d3.timer(function() {
-      for (i in processqueue) {
-        var elem = processqueue[i];
-        data[elem.timestamp] = data[elem.timestamp] ? data[elem.timestamp] + elem.size : elem.size;
-        processqueue.splice(i,1);
-      };
-    });
+      // svg.selectAll("path")
+      //   //.data(samples)
+      //   .data(stack([[{"x":0,"y":2}, {"x":1,"y":3}, {"x":2,"y":2}, {"x":3,"y":2}]]))
+      //   .enter()
+      //   .append("path")
+      //   .attr("d", area)
+      //   .style("fill", "grey");
 
     d3.timer(function() {
       time = currentTime();
+      grouped_data = [];
+
+      d3.nest()
+        .key(function(d) { return d.timestamp; })
+        .rollup(function(leaves) { return {"size": d3.sum(leaves, function(d) { return d.size; })} })
+        .entries(data)
+        .forEach(function(elem){ grouped_data[elem.key] = elem.value });
+
+      console.log(grouped_data.length)
 
       // Make a list of time units, each with a value
-      var samples = d3.range(time, time + (samples * sampleinterval)).map(function(t) { 
-        return {"x": t, "y": data[t] || 0};
+      var samples = d3.range(time, time + (numberofsamples * sampleinterval), sampleinterval).map(function(t) { 
+        sum = 0;
+
+        for(i = t; i < (t + sampleinterval); i++) {
+          if(grouped_data[i]){
+            sum += grouped_data[i].size;
+          }
+        }
+
+        return {"x": t % time, "y": sum};
       });
 
-      svg.selectAll("path")
-        .data(samples)
-        .enter()
-        .append("path")
-        .attr("d", area)
-        .style("fill", "grey");
+      // svg.selectAll("path")
+      //   .data(stack([samples]))
+      //   //.data(stack([[{"x":0,"y":10}, {"x":1,"y":10}, {"x":2,"y":10}, {"x":3,"y":10}]]))
+      //   .enter()
+      //   .append("path")
+      //   .attr("d", area)
+      //   .style("fill", "grey");
     });
 
   </script>
