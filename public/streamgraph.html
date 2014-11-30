@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>Streamgraph</title>
+  <style>
+
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      margin: auto;
+      position: relative;
+    }
+
+  </style>
+
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+  <script>
+
+var m = 50, // number of samples
+    stack = d3.layout.stack().offset("wiggle"),
+    data = stack([ d3.range(10).map(function(val, index){ return {x: index, y: 10*Math.random()}; }) ]),
+    my_ips = [];
+
+    var width = window.innerWidth,
+    height = window.innerHeight/2;
+
+    var x = d3.scale.linear()
+    .domain([0, m - 1])
+    .range([0, width]);
+
+    var y = d3.scale.linear()
+    .domain([0, 10])
+    .range([height, 0]);
+
+    var area = d3.svg.area()
+      .interpolate('basis')
+      .x(function(d) { return x(d.x); })
+      .y0(function(d) { return y(d.y0); })
+      .y1(function(d) { return y(d.y0 + d.y); });
+
+    var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    svg.selectAll("path")
+      .data(data)
+      .enter()
+      .append("path")
+      .attr("d", area)
+      .style("fill", "grey");
+
+    window.onload = function() {
+      var ws = new WebSocket('ws://localhost:8080');
+
+      ws.onmessage = function(event) {
+        var msg = JSON.parse(event.data);
+
+        switch(msg.type) {
+          case "packet" : window.dispatchEvent(new CustomEvent('packet_received', {"detail": msg.packet})); break;
+          case "ip"     : my_ips = msg.ip; break;
+        }
+      }
+    }
+
+    window.addEventListener('packet_received', function (event) {
+      var packet = event.detail;
+      data_length = packet.link.ip.tcp.data_bytes;
+
+      console.log(packet, data_length)
+    }, false);
+
+  </script>
+</body>
+</html>
