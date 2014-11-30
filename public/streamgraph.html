@@ -10,6 +10,11 @@
       position: relative;
     }
 
+    .line {
+      fill: none;
+      stroke: steelblue;
+      stroke-width: 1.5px;
+    }
   </style>
 
   <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -19,8 +24,7 @@
   // Data processing code
   var queue = [[]], 
       sampleinterval = 100,
-      numberofsamples = 20,
-      maxval = 1000;
+      numberofsamples = 20;
 
   window.onload = function() {
       var ws = new WebSocket('ws://localhost:8080');
@@ -49,8 +53,7 @@
   }, sampleinterval);
 
   // D3 Visualisation code
-  var stack = d3.layout.stack().offset("zero"),
-    my_ips = [];
+  var my_ips = [];
 
     var width = window.innerWidth,
     height = window.innerHeight;
@@ -60,42 +63,46 @@
     .range([0, width]);
 
     var y = d3.scale.linear()
-    .domain([0, maxval])
+    //.domain([0, maxval])
     .range([height, 0]);
 
-    var area = d3.svg.area()
-      // .interpolate('basis')
+    var line = d3.svg.line()
+      .interpolate('basis')
       .x(function(d) { return x(d.x); })
-      .y0(function(d) { return y(d.y0); })
-      .y1(function(d) { return y(d.y0 + d.y); });
+      .y(function(d) { return y(d.y); })
 
     var svg = d3.select("body").append("svg")
       .attr("width", width)
       .attr("height", height);
     
     // Inital zero line
-    svg.selectAll("path")
-        .data(stack([d3.range(numberofsamples).map(function(d){ return {"x":d, "y":1}; })]))
-        .enter()
-        .append("path")
-        .attr("d", area)
-        .style("fill", "grey");      
-
+    svg.append("path")
+      .data([d3.range(numberofsamples).map(function(d){ return {"x":d, "y":10}; })])
+      .attr("class", "line")
+      .attr("d", line);
 
     // Timer that does the visualisation
+    maxval = 0;
+
     d3.timer(function() {
+
       var samples = d3.range(numberofsamples)
         .map(function(index) {
-          var y = queue[index] ? queue[index].reduce(function(previousValue, packet_size) { 
+          var yval = queue[index] ? queue[index].reduce(function(previousValue, packet_size) { 
               return previousValue += packet_size;//packet.link.ip.tcp.data_bytes; 
             }, 0) : 0;
 
-          return {"x": index, "y": y};
+          if(yval > maxval) {
+            maxval = yval;
+            y.domain([0, maxval]);
+          }
+
+          return {"x": index, "y": yval};
         });
 
         svg.selectAll("path")
-          .data(stack([samples])) // set the new data
-          .attr("d", area);
+          .data([samples]) // set the new data
+          .attr("d", line);
     });
 
   </script>
