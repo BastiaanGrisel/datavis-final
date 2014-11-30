@@ -18,8 +18,8 @@
   <script>
   // Data processing code
   var queue = [[]], 
-      sampleinterval = 200,
-      numberofsamples = 50,
+      sampleinterval = 100,
+      numberofsamples = 20,
       maxval = 1000;
 
   window.onload = function() {
@@ -41,9 +41,6 @@
   }, false);
 
   // Timer that handles the queue
-  function currentTime() { return new Date().getTime() }
-  var startTime = currentTime();
-
   setInterval(function(){
       queue.unshift([]);
 
@@ -52,11 +49,11 @@
   }, sampleinterval);
 
   // D3 Visualisation code
-  var stack = d3.layout.stack().offset("wiggle"),
+  var stack = d3.layout.stack().offset("zero"),
     my_ips = [];
 
     var width = window.innerWidth,
-    height = window.innerHeight/2;
+    height = window.innerHeight;
 
     var x = d3.scale.linear()
     .domain([0, numberofsamples - 1])
@@ -67,7 +64,7 @@
     .range([height, 0]);
 
     var area = d3.svg.area()
-      .interpolate('basis')
+      // .interpolate('basis')
       .x(function(d) { return x(d.x); })
       .y0(function(d) { return y(d.y0); })
       .y1(function(d) { return y(d.y0 + d.y); });
@@ -76,6 +73,15 @@
       .attr("width", width)
       .attr("height", height);
     
+    // Inital zero line
+    svg.selectAll("path")
+        .data(stack([d3.range(numberofsamples).map(function(d){ return {"x":d, "y":1}; })]))
+        .enter()
+        .append("path")
+        .attr("d", area)
+        .style("fill", "grey");      
+
+
     // Timer that does the visualisation
     d3.timer(function() {
       var samples = d3.range(numberofsamples)
@@ -87,13 +93,9 @@
           return {"x": index, "y": y};
         });
 
-      svg.selectAll("path")
-        .data(stack([samples]))
-        // .data(stack([[{"x":0,"y":2}, {"x":1,"y":30}, {"x":2,"y":20}, {"x":3,"y":20}]]))
-        .enter()
-        .append("path")
-        .attr("d", area)
-        .style("fill", "grey");
+        svg.selectAll("path")
+          .data(stack([samples])) // set the new data
+          .attr("d", area);
     });
 
   </script>
