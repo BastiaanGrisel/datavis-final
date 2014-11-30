@@ -16,8 +16,35 @@
 </head>
 <body>
   <script>
+  // Data processing code
+  var data = [],
+      sampleinterval = 500, // Polling interval in milliseconds
+      processqueue = [];
 
-var m = 50, // number of samples
+  window.onload = function() {
+      var ws = new WebSocket('ws://localhost:8080');
+
+      ws.onmessage = function(event) {
+        var msg = JSON.parse(event.data);
+
+        switch(msg.type) {
+          case "packet" : window.dispatchEvent(new CustomEvent('packet_received', {"detail": msg.packet})); break;
+          case "ip"     : my_ips = msg.ip; break;
+        }
+      }
+    }
+
+  function currentTime() { return new Date().getTime() }
+
+  window.addEventListener('packet_received', function (event) {
+    var packet = event.detail;
+    data_length = packet.link.ip.tcp.data_bytes;
+    
+    processqueue.push({"timestamp": currentTime(), "size": data_length});
+  }, false);
+
+  // D3 Visualisation code
+  var samples = 50, // number of samples
     stack = d3.layout.stack().offset("wiggle"),
     data = stack([ d3.range(10).map(function(val, index){ return {x: index, y: 10*Math.random()}; }) ]),
     my_ips = [];
@@ -26,7 +53,7 @@ var m = 50, // number of samples
     height = window.innerHeight/2;
 
     var x = d3.scale.linear()
-    .domain([0, m - 1])
+    .domain([0, samples - 1])
     .range([0, width]);
 
     var y = d3.scale.linear()
@@ -42,33 +69,33 @@ var m = 50, // number of samples
     var svg = d3.select("body").append("svg")
       .attr("width", width)
       .attr("height", height);
+    
+    // Updating visualisation code
 
-    svg.selectAll("path")
-      .data(data)
-      .enter()
-      .append("path")
-      .attr("d", area)
-      .style("fill", "grey");
+    // Process the packets sequentially
+    d3.timer(function() {
+      for (i in processqueue) {
+        var elem = processqueue[i];
+        data[elem.timestamp] = data[elem.timestamp] ? data[elem.timestamp] + elem.size : elem.size;
+        processqueue.splice(i,1);
+      };
+    });
 
-    window.onload = function() {
-      var ws = new WebSocket('ws://localhost:8080');
+    d3.timer(function() {
+      time = currentTime();
 
-      ws.onmessage = function(event) {
-        var msg = JSON.parse(event.data);
+      // Make a list of time units, each with a value
+      var samples = d3.range(time, time + (samples * sampleinterval)).map(function(t) { 
+        return {"x": t, "y": data[t] || 0};
+      });
 
-        switch(msg.type) {
-          case "packet" : window.dispatchEvent(new CustomEvent('packet_received', {"detail": msg.packet})); break;
-          case "ip"     : my_ips = msg.ip; break;
-        }
-      }
-    }
-
-    window.addEventListener('packet_received', function (event) {
-      var packet = event.detail;
-      data_length = packet.link.ip.tcp.data_bytes;
-
-      console.log(packet, data_length)
-    }, false);
+      svg.selectAll("path")
+        .data(samples)
+        .enter()
+        .append("path")
+        .attr("d", area)
+        .style("fill", "grey");
+    });
 
   </script>
 </body>
