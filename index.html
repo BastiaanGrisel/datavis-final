@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>Packet Capture</title>
+
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+  <ul id="list">
+
+  </ul>
+  <script>
+  var my_ips = [];
+
+  window.onload = function() {
+    var ws = new WebSocket('ws://localhost:8080');
+
+    ws.onmessage = function(event) {
+      var msg = JSON.parse(event.data);
+
+      switch(msg.type) {
+        case "packet" : window.dispatchEvent(new CustomEvent('packet_received', {"detail": msg.packet})); break;
+        case "ip"     : window.dispatchEvent(new CustomEvent('ip_received', {"detail": msg.ip})); break;
+      }
+    }
+  }
+
+  window.addEventListener('packet_received', function (event) {
+    var packet = event.detail;
+
+    console.log(packet.link.ip.saddr + " -> " + packet.link.ip.daddr + " (" + packet.link.ip.tcp.data_bytes + " bytes of payload)");
+  }, false);
+
+  window.addEventListener('ip_received', function (event) {
+    var packet = event.detail;
+
+    my_ips = packet;
+    console.log("My ips are " + my_ips);
+  }, false);
+  </script>
+</body>
+</html>
