@@ -53,6 +53,11 @@
       .attr("width", width)
       .attr("height", height/2)
 
+    out_graph = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height/2)
+      .attr("transform", "translate(0,"+ height/2 +")")
+
     var x = d3.scale.linear()
       .domain([0, number_of_bins-1])
       .range([0, width]);
@@ -68,7 +73,13 @@
       })
       .interpolate("basis");
 
-    path = in_graph
+    in_path = in_graph
+      .append("path")
+      .datum(bins)
+      .attr("class", "line")
+      .attr("d", line);
+
+    out_path = out_graph
       .append("path")
       .datum(bins)
       .attr("class", "line")
@@ -83,8 +94,8 @@
       // Only keep the relevant bins and throw away the old ones
       bins  = bins.splice(0, number_of_bins);
 
-      path
-        .datum(bins)
+      in_path
+        .datum(bins.map(filterIncoming))
         .attr("d", line)
         .attr("transform", "translate(" + x(-1) + ",0)")
       .transition()
@@ -92,7 +103,34 @@
         .ease("linear")
         .attr("transform", "translate("+x(0)+",0)")
         .each("end", tick);
+
+      out_path
+        .datum(bins.map(filterOutgoing))
+        .attr("d", line)
+        .attr("transform", "translate(" + x(-1) + ",0)")
+      .transition()
+        .duration(1000/bins_per_second)
+        .ease("linear")
+        .attr("transform", "translate("+x(0)+",0)")
     }
+  }
+
+  // Returns only incoming packets in the bin
+  function filterIncoming(bin) {
+    return bin.filter(function(packet) {
+      return contains(my_ips, packet.link.ip.daddr);
+    })
+  }
+
+  // Returns only out going packets in the bin
+  function filterOutgoing(bin) {
+    return bin.filter(function(packet) {
+      return contains(my_ips, packet.link.ip.saddr);
+    })
+  }
+
+  function contains(array, element) {
+    return array.indexOf(element) != -1;
   }
 
   window.addEventListener('packet_received', function (event) {
@@ -109,11 +147,6 @@
     my_ips = packet;
     // console.log("My ips are " + my_ips);
   }, false);
-
-  function isIncomingPacket(packet, my_ips) {
-    // If the destination address of a packet is one of our own IPs, then it is incoming
-    return my_ips.indexOf(packet.link.ip.daddr) != -1;
-  }
   </script>
 </body>
 </html>
