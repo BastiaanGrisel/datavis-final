@@ -69,7 +69,7 @@
     var area_out = d3.svg.area()
       .x(function(d, i) { return x_out(i); })
       .y0(height/2)
-      .y1(function(d) { return y_out(d.reduce(function(prev, current){ return prev + current.link.ip.total_length },0)); })
+      .y1(function(d) { return y_out(d.reduce(totalBinSize, 0)); })
       .interpolate("basis");
 
     var x_in = d3.scale.linear()
@@ -83,7 +83,7 @@
     var area_in = d3.svg.area()
       .x(function(d, i) { return x_in(i); })
       .y0(0)
-      .y1(function(d) { return y_in(d.reduce(function(prev, current){ return prev + current.link.ip.total_length },0)); })
+      .y1(function(d) { return y_in(d.reduce(totalBinSize, 0)); })
       .interpolate("basis");
 
     path_out = graph_out
@@ -107,8 +107,16 @@
       // Only keep the relevant bins and throw away the old ones
       bins = bins.splice(0, number_of_bins);
 
+      // Split bins
+      bins_in = bins.map(filterIncoming);
+      bins_out = bins.map(filterOutgoing);
+
+      // Resize axes
+      y_in.domain([0, bins_in.reduce(maxBinSize, 0)]);
+      y_out.domain([0, bins_out.reduce(maxBinSize, 0)]);
+
       path_in
-        .datum(bins.map(filterIncoming))
+        .datum(bins_in)
         .attr("d", area_in)
         // .attr("transform", "translate(" + x_in(0) + ",0)")
       .transition()
@@ -118,7 +126,7 @@
         .each("end", tick);
 
       path_out
-        .datum(bins.map(filterOutgoing))
+        .datum(bins_out)
         .attr("d", area_out)
         // .attr("transform", "translate(" + x_out(-1) + ",0)")
       .transition()
@@ -145,6 +153,18 @@
   function contains(array, element) {
     return array.indexOf(element) != -1;
   }
+
+  function flatten(a, b) {
+    return a.concat(b);
+  }
+
+  function maxBinSize(bin_prev, bin_curr){
+    var bin_size = bin_curr.reduce(totalBinSize, 0);
+
+    return bin_size > bin_prev ? bin_size : bin_prev;
+  }
+
+  function totalBinSize(prev, current){ return prev + current.link.ip.total_length }
 
   window.addEventListener('packet_received', function (event) {
     var packet = event.detail;
