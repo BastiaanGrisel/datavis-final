@@ -42,19 +42,16 @@
     }
 
     var number_of_bins = 50;
-    var bins_per_second = 1;
+    var bins_per_second = 5;
     bins = [new Array()];
 
     // Create two graphs in D3
-    var margin = {'top':10, 'right':10, 'bottom':10, 'left':10},
-        width  = window.innerWidth - margin.left - margin.right,
-        height = window.innerHeight - margin.top - margin.bottom;
+    var width  = window.innerWidth,
+        height = window.innerHeight;
 
     in_graph = d3.select("body").append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      .attr("width", width)
+      .attr("height", height/2)
 
     var x = d3.scale.linear()
       .domain([0, number_of_bins-1])
@@ -62,61 +59,40 @@
 
     var y = d3.scale.linear()
       .domain([0, 2000])
-      .range([height, 0]);
+      .range([height/2, 0]);
 
     var line = d3.svg.line()
       .x(function(d, i) { return x(i); })
-      .y(function(d, i) { 
-
-        var v = Math.round(100*Math.random());
-        console.log(v);
-        return y(v);
-      });
+      .y(function(d, i) {
+        return y(d.length);
+      })
+      .interpolate("basis");
 
     path = in_graph
       .append("path")
-      .datum([10,2,3,4,5,3,3,2,3,3])
+      .datum(bins)
       .attr("class", "line")
       .attr("d", line);
 
-    // tick();
+    tick();
 
-    // function tick() {      
-    //   // Create a new bin and add it to the beginning of the array
-    //   bins.unshift(new Array());
+    function tick() {      
+      // Create a new bin and add it to the beginning of the array
+      bins.unshift(new Array());
 
-    //   // Only keep the relevant bins and throw away the old ones
-    //   bins  = bins.splice(0, number_of_bins);
+      // Only keep the relevant bins and throw away the old ones
+      bins  = bins.splice(0, number_of_bins);
 
-    //   path
-    //     .datum(bins)
-    //     .attr("d", line)
-    //     .attr("transform", "translate(" + x(-1) + ",0)")
-    //   .transition()
-    //     .duration(1000/bins_per_second)
-    //     .ease("linear")
-    //     .attr("transform", null)
-    //     .each("end", tick);
-    // }
-
-    //   // Update the bins
-    // function tick() {
-    //   console.log('tick')
-    //   // // Create a new bin and add it to the beginning of the array
-    //   // bins.unshift(new Array());
-
-    //   // // Only keep the relevant bins and throw away the old ones
-    //   // bins  = bins.splice(0, number_of_bins);
-
-    //   path
-    //     .attr("d", line)
-    //     .attr("transform", null)
-    //   .transition()
-    //     .duration(1000/bins_per_second)
-    //     .ease("linear")
-    //     .attr("transform", "translate(" + x(-1) + ",0)")
-    //     .each("end", tick);
-    // }
+      path
+        .datum(bins)
+        .attr("d", line)
+        .attr("transform", "translate(" + x(-1) + ",0)")
+      .transition()
+        .duration(1000/bins_per_second)
+        .ease("linear")
+        .attr("transform", "translate("+x(0)+",0)")
+        .each("end", tick);
+    }
   }
 
   window.addEventListener('packet_received', function (event) {
