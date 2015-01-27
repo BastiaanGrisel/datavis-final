@@ -64,11 +64,11 @@
 
     var y_out = d3.scale.linear()
       .domain([0, 2000])
-      .range([height/2,0]);
+      .range([0, height/2]);
 
     var area_out = d3.svg.area()
       .x(function(d, i) { return x_out(i); })
-      .y0(height/2)
+      .y0(0)
       .y1(function(d) { return y_out(d.reduce(totalBinSize, 0)); })
       .interpolate("basis");
 
@@ -78,11 +78,11 @@
 
     var y_in = d3.scale.linear()
       .domain([0, 2000])
-      .range([0, height/2]);
+      .range([height/2, 0]);
 
     var area_in = d3.svg.area()
       .x(function(d, i) { return x_in(i); })
-      .y0(0)
+      .y0(height/2)
       .y1(function(d) { return y_in(d.reduce(totalBinSize, 0)); })
       .interpolate("basis");
 
@@ -122,17 +122,17 @@
       .transition()
         .duration(1000/bins_per_second)
         // .ease("linear")
-        // .attr("transform", "translate("+x_in(-1)+",0)")
+        // .attr("transform", "translate("+x_in(0)+",0)")
         .each("end", tick);
 
       path_out
         .datum(bins_out)
         .attr("d", area_out)
-        // .attr("transform", "translate(" + x_out(-1) + ",0)")
+        .attr("transform", "translate(" + x_out(-1) + ",0)")
       .transition()
         .duration(1000/bins_per_second)
-        // .ease("linear")
-        // .attr("transform", "translate("+x_out(0)+",0)")
+        .ease("linear")
+        .attr("transform", "translate("+x_out(0)+",0)")
     }
   }
 
