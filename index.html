@@ -4,11 +4,28 @@
   <title>Packet Capture</title>
 
   <script src="http://d3js.org/d3.v3.min.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .line {
+      fill: none;
+      stroke: #000;
+      stroke-width: 1.5px;
+    }
+
+    svg {
+      /*shape-rendering: crispEdges;*/
+      vertical-align:top; /* Fix to remove unwanted 5px padding in html */
+    }
+  </style>
 </head>
 <body>
-  <ul id="list">
-
-  </ul>
   <script>
   var my_ips = [];
 
@@ -23,20 +40,104 @@
         case "ip"     : window.dispatchEvent(new CustomEvent('ip_received', {"detail": msg.ip})); break;
       }
     }
+
+    var number_of_bins = 50;
+    var bins_per_second = 1;
+    bins = [new Array()];
+
+    // Create two graphs in D3
+    var margin = {'top':10, 'right':10, 'bottom':10, 'left':10},
+        width  = window.innerWidth - margin.left - margin.right,
+        height = window.innerHeight - margin.top - margin.bottom;
+
+    in_graph = d3.select("body").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3.scale.linear()
+      .domain([0, number_of_bins-1])
+      .range([0, width]);
+
+    var y = d3.scale.linear()
+      .domain([0, 2000])
+      .range([height, 0]);
+
+    var line = d3.svg.line()
+      .x(function(d, i) { return x(i); })
+      .y(function(d, i) { 
+
+        var v = Math.round(100*Math.random());
+        console.log(v);
+        return y(v);
+      });
+
+    path = in_graph
+      .append("path")
+      .datum([10,2,3,4,5,3,3,2,3,3])
+      .attr("class", "line")
+      .attr("d", line);
+
+    // tick();
+
+    // function tick() {      
+    //   // Create a new bin and add it to the beginning of the array
+    //   bins.unshift(new Array());
+
+    //   // Only keep the relevant bins and throw away the old ones
+    //   bins  = bins.splice(0, number_of_bins);
+
+    //   path
+    //     .datum(bins)
+    //     .attr("d", line)
+    //     .attr("transform", "translate(" + x(-1) + ",0)")
+    //   .transition()
+    //     .duration(1000/bins_per_second)
+    //     .ease("linear")
+    //     .attr("transform", null)
+    //     .each("end", tick);
+    // }
+
+    //   // Update the bins
+    // function tick() {
+    //   console.log('tick')
+    //   // // Create a new bin and add it to the beginning of the array
+    //   // bins.unshift(new Array());
+
+    //   // // Only keep the relevant bins and throw away the old ones
+    //   // bins  = bins.splice(0, number_of_bins);
+
+    //   path
+    //     .attr("d", line)
+    //     .attr("transform", null)
+    //   .transition()
+    //     .duration(1000/bins_per_second)
+    //     .ease("linear")
+    //     .attr("transform", "translate(" + x(-1) + ",0)")
+    //     .each("end", tick);
+    // }
   }
 
   window.addEventListener('packet_received', function (event) {
     var packet = event.detail;
 
-    console.log(packet.link.ip.saddr + " -> " + packet.link.ip.daddr + " (" + packet.link.ip.tcp.data_bytes + " bytes of payload)");
+    // console.log(packet.link.ip.saddr + " -> " + packet.link.ip.daddr + " (" + packet.link.ip.tcp.data_bytes + " bytes of payload)");
+
+    bins[0].unshift(packet);
   }, false);
 
   window.addEventListener('ip_received', function (event) {
     var packet = event.detail;
 
     my_ips = packet;
-    console.log("My ips are " + my_ips);
+    // console.log("My ips are " + my_ips);
   }, false);
+
+  function isIncomingPacket(packet, my_ips) {
+    // If the destination address of a packet is one of our own IPs, then it is incoming
+    return my_ips.indexOf(packet.link.ip.daddr) != -1;
+  }
   </script>
 </body>
 </html>
