@@ -49,41 +49,56 @@
     var width  = window.innerWidth,
         height = window.innerHeight;
 
-    in_graph = d3.select("body").append("svg")
+    graph_out = d3.select("body").append("svg")
       .attr("width", width)
       .attr("height", height/2)
 
-    out_graph = d3.select("body").append("svg")
+    graph_in = d3.select("body").append("svg")
       .attr("width", width)
       .attr("height", height/2)
       .attr("transform", "translate(0,"+ height/2 +")")
 
-    var x = d3.scale.linear()
+    var x_out = d3.scale.linear()
       .domain([0, number_of_bins-1])
       .range([0, width]);
 
-    var y = d3.scale.linear()
+    var y_out = d3.scale.linear()
       .domain([0, 2000])
-      .range([height/2, 0]);
+      .range([height/2,0]);
 
-    var line = d3.svg.line()
-      .x(function(d, i) { return x(i); })
+    var line_out = d3.svg.line()
+      .x(function(d, i) { return x_out(i); })
       .y(function(d, i) {
-        return y(d.length);
+        return y_out(d.length);
       })
       .interpolate("basis");
 
-    in_path = in_graph
-      .append("path")
-      .datum(bins)
-      .attr("class", "line")
-      .attr("d", line);
+    var x_in = d3.scale.linear()
+      .domain([0, number_of_bins-1])
+      .range([width, 0]);
 
-    out_path = out_graph
+    var y_in = d3.scale.linear()
+      .domain([0, 2000])
+      .range([0, height/2]);
+
+    var line_in = d3.svg.line()
+      .x(function(d, i) { return x_in(i); })
+      .y(function(d, i) {
+        return y_in(d.length);
+      })
+      .interpolate("basis");
+
+    path_out = graph_out
       .append("path")
       .datum(bins)
       .attr("class", "line")
-      .attr("d", line);
+      .attr("d", line_out);
+
+    path_in = graph_in
+      .append("path")
+      .datum(bins)
+      .attr("class", "line")
+      .attr("d", line_in);
 
     tick();
 
@@ -92,26 +107,26 @@
       bins.unshift(new Array());
 
       // Only keep the relevant bins and throw away the old ones
-      bins  = bins.splice(0, number_of_bins);
+      bins = bins.splice(0, number_of_bins);
 
-      in_path
+      path_in
         .datum(bins.map(filterIncoming))
-        .attr("d", line)
-        .attr("transform", "translate(" + x(-1) + ",0)")
+        .attr("d", line_in)
+        // .attr("transform", "translate(" + x_in(0) + ",0)")
       .transition()
         .duration(1000/bins_per_second)
-        .ease("linear")
-        .attr("transform", "translate("+x(0)+",0)")
+        // .ease("linear")
+        // .attr("transform", "translate("+x_in(-1)+",0)")
         .each("end", tick);
 
-      out_path
+      path_out
         .datum(bins.map(filterOutgoing))
-        .attr("d", line)
-        .attr("transform", "translate(" + x(-1) + ",0)")
+        .attr("d", line_out)
+        // .attr("transform", "translate(" + x_out(-1) + ",0)")
       .transition()
         .duration(1000/bins_per_second)
-        .ease("linear")
-        .attr("transform", "translate("+x(0)+",0)")
+        // .ease("linear")
+        // .attr("transform", "translate("+x_out(0)+",0)")
     }
   }
 
