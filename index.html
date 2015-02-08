@@ -118,21 +118,12 @@
       path_in
         .datum(bins_in)
         .attr("d", area_in)
-        // .attr("transform", "translate(" + x_in(0) + ",0)")
-      .transition()
-        .duration(1000/bins_per_second)
-        // .ease("linear")
-        // .attr("transform", "translate("+x_in(0)+",0)")
-        .each("end", tick);
 
       path_out
         .datum(bins_out)
         .attr("d", area_out)
-        .attr("transform", "translate(" + x_out(-1) + ",0)")
-      .transition()
-        .duration(1000/bins_per_second)
-        .ease("linear")
-        .attr("transform", "translate("+x_out(0)+",0)")
+
+      setTimeout(tick, 1000/bins_per_second);
     }
   }
 
