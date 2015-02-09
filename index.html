@@ -7,6 +7,7 @@
 </head>
 <body>
   <script>
+  var stats = new Object(); // Holds the stats per IP
   var my_ips = [];
 
   window.onload = function() {
@@ -25,10 +26,26 @@
   window.addEventListener('packet_received', function (event) {
     var packet = event.detail;
 
-    console.log(packet);
-    // console.log(packet.link.ip.saddr + " -> " + packet.link.ip.daddr + " (" + packet.link.ip.tcp.data_bytes + " bytes of payload)");
+    // Update the stats
+    [packet.saddr, packet.daddr].forEach(function(ip) {
+      if(stats[ip] !== undefined) return;
 
-    // d3.select('body').append(JSON.serialize(packet))
+      stats[ip] = new Object();
+      stats[ip]['packets'] = new Object();
+      stats[ip]['size'] = new Object();
+
+      stats[ip]['packets']['in'] = 0;
+      stats[ip]['packets']['out'] = 0;
+      stats[ip]['size']['in'] = 0;
+      stats[ip]['size']['out'] = 0;
+    })
+    
+    stats[packet.saddr]['packets']['out'] += 1;
+    stats[packet.saddr]['size']['out'] += packet.size;
+
+    stats[packet.daddr]['packets']['in'] += 1;
+    stats[packet.daddr]['size']['in'] += packet.size;
+
   }, false);
 
   window.addEventListener('ip_received', function (event) {
