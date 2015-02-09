@@ -2,71 +2,8 @@
 <head>
   <meta charset="utf-8">
   <title>Packet Capture</title>
-  <style>
-	html,body{
-		height: 100%; 
-		width: 100%;
-	}
-	.country:hover{
-	  stroke: #fff;
-	  stroke-width: 1.5px;
-	}
-	.text{
-	  font-size:10px;
-	  text-transform:capitalize;
-	}
-	#map_container {
-	  margin:-1px;
-	  border:1px solid #000;
-	  border-radius: 5px;
-	  height:80%;
-	  width:80%;
-	  overflow:hidden;
-	  background: #F0F8FF;
-	  float:left;
-	}
-	#ip_list{ 
-	  width:20%;
-	  height:80%;
-	  border:1px solid #000;
-	  border-radius: 5px;
 
-	  float:left;
-	  margin:-1px;
-	}
-	#intensity_feed{
-	  border:1px solid #000;
-	  border-radius: 5px;
-	  width: 100%;
-	  height: 20%;
-	  float:left;
-	  margin:-1px;
-	}
-	.hidden { 
-	  display: none; 
-	}
-	div.tooltip {
-	  color: #222; 
-	  background: #fff; 
-	  padding: .5em; 
-	  text-shadow: #f5f5f5 0 1px 0;
-	  border-radius: 2px; 
-	  box-shadow: 0px 0px 2px 0px #a6a6a6; 
-	  opacity: 0.9; 
-	  position: absolute;
-	}
-	.graticule {
-	  fill: none;
-	  stroke: #bbb;
-	  stroke-width: .5px;
-	  stroke-opacity: .5;
-	}
-	.equator {
-	  stroke: #ccc;
-	  stroke-width: 1px;
-	}
-
-  </style>
+  <link rel="stylesheet" href="index.css" />
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="topojson.v1.min.js"></script>
 
@@ -75,91 +12,90 @@
   <div id="map_container"></div>
   <div id="ip_list"></div>
   <div id="intensity_feed"></div>
+
   <script src="worldmap.js"></script>
   <script>
-  var my_ips = [];
-  var stats = new Object(); // Holds the stats per IP
+	var my_ips = [];
+	var stats = new Object(); // Holds the stats per IP
 
-  window.onload = function() {
-    var ws = new WebSocket('ws://localhost:8080');
+	window.onload = function() {
+		var ws = new WebSocket('ws://localhost:8080');
 
-    ws.onmessage = function(event) {
-      var msg = JSON.parse(event.data);
+		ws.onmessage = function(event) {
+		  var msg = JSON.parse(event.data);
 
-      switch(msg.type) {
-        case "packet" : window.dispatchEvent(new CustomEvent('packet_received', {"detail": msg.packet})); break;
-        case "ip"     : window.dispatchEvent(new CustomEvent('ip_received', {"detail": msg.ip})); break;
-      }
-    }
-  }
+		  switch(msg.type) {
+		    case "packet" : window.dispatchEvent(new CustomEvent('packet_received', {"detail": msg.packet})); break;
+		    case "ip"     : window.dispatchEvent(new CustomEvent('ip_received', {"detail": msg.ip})); break;
+		  }
+		}
+	}
 
-  window.addEventListener('packet_received', function (event) {
-    var packet = event.detail;
+	window.addEventListener('packet_received', function (event) {
+		var packet = event.detail;
 
-    updateStats(packet);
-  }, false);
+		updateStats(packet);
+	}, false);
 
-  window.addEventListener('ip_received', function (event) {
-    var packet = event.detail;
+	window.addEventListener('ip_received', function (event) {
+		var packet = event.detail;
 
-    my_ips = packet;
-    console.log("My ips are " + my_ips);
-  }, false);
+		my_ips = packet;
+		console.log("My ips are " + my_ips);
+	}, false);
 
+	function updateStats(packet) {
+	  [packet.saddr, packet.daddr].forEach(function(ip) {
+	    if(stats[ip] !== undefined) return;
 
-function updateStats(packet) {
-  [packet.saddr, packet.daddr].forEach(function(ip) {
-    if(stats[ip] !== undefined) return;
+	    stats[ip] = {
+	      'packets_total': {'in': 0,'out': 0},
+	      'packets_ps': {'in': 0,'out': 0},
+	      'size_total': {'in': 0,'out': 0},
+	      'size_ps': {'in': 0,'out': 0}
+	    };
 
-    stats[ip] = {
-      'packets_total': {'in': 0,'out': 0},
-      'packets_ps': {'in': 0,'out': 0},
-      'size_total': {'in': 0,'out': 0},
-      'size_ps': {'in': 0,'out': 0}
-    };
+	    setInterval((function(){
+	      var prev_total_packets = {
+	        'in': stats[ip]['packets_total']['in'], 
+	        'out': stats[ip]['packets_total']['out'] 
+	      }
 
-    setInterval((function(){
-      var prev_total_packets = {
-        'in': stats[ip]['packets_total']['in'], 
-        'out': stats[ip]['packets_total']['out'] 
-      }
+	      var prev_total_size = {
+	        'in': stats[ip]['size_total']['in'],
+	        'out': stats[ip]['size_total']['out']
+	      }
 
-      var prev_total_size = {
-        'in': stats[ip]['size_total']['in'],
-        'out': stats[ip]['size_total']['out']
-      }
+	      return function() {
+	        stats[ip]['packets_ps'] = {
+	          'in': stats[ip]['packets_total']['in'] - prev_total_packets.in,
+	          'out': stats[ip]['packets_total']['out'] - prev_total_packets.out
+	        }
 
-      return function() {
-        stats[ip]['packets_ps'] = {
-          'in': stats[ip]['packets_total']['in'] - prev_total_packets.in,
-          'out': stats[ip]['packets_total']['out'] - prev_total_packets.out
-        }
+	        stats[ip]['size_ps'] = {
+	          'in': stats[ip]['size_total']['in'] - prev_total_size.in,
+	          'out': stats[ip]['size_total']['out'] - prev_total_size.out
+	        }
 
-        stats[ip]['size_ps'] = {
-          'in': stats[ip]['size_total']['in'] - prev_total_size.in,
-          'out': stats[ip]['size_total']['out'] - prev_total_size.out
-        }
+	        prev_total_packets = {
+	          'in': stats[ip]['packets_total']['in'], 
+	          'out': stats[ip]['packets_total']['out'] 
+	        }
 
-        prev_total_packets = {
-          'in': stats[ip]['packets_total']['in'], 
-          'out': stats[ip]['packets_total']['out'] 
-        }
+	        prev_total_size = {
+	          'in': stats[ip]['size_total']['in'],
+	          'out': stats[ip]['size_total']['out']
+	        }
+	      }
+	    })(), 1000);
+	  });
 
-        prev_total_size = {
-          'in': stats[ip]['size_total']['in'],
-          'out': stats[ip]['size_total']['out']
-        }
-      }
-    })(), 1000);
-  });
+	  stats[packet.saddr]['packets_total']['out'] += 1;
+	  stats[packet.saddr]['size_total']['out'] += packet.size;
 
-  stats[packet.saddr]['packets_total']['out'] += 1;
-  stats[packet.saddr]['size_total']['out'] += packet.size;
-
-  stats[packet.daddr]['packets_total']['in'] += 1;
-  stats[packet.daddr]['size_total']['in'] += packet.size;
-}
-
+	  stats[packet.daddr]['packets_total']['in'] += 1;
+	  stats[packet.daddr]['size_total']['in'] += packet.size;
+	}
   </script>
 </body>
 </html>
