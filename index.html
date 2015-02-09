@@ -37,54 +37,34 @@
   }, false);
 
   function updateStats(packet) {
-    [packet.saddr, packet.daddr].forEach(function(ip) {
-      if(stats[ip] !== undefined) return;
+    [{"ip": packet.saddr, "dir": "out"}, {"ip": packet.daddr, "dir": "in"}].forEach(function(info) {
+      if(stats[info.ip] !== undefined) {
+        stats[info.ip]['packets_total'][info.dir] += 1;
+        stats[info.ip]['size'][info.dir] += packet.size;
+        return;
+      }
 
-      stats[ip] = new Object();
-      stats[ip]['packets_total'] = new Object();
-      stats[ip]['size'] = new Object();
+      stats[info.ip]                  = new Object();
+      stats[info.ip]['packets_total'] = new Object();
+      stats[info.ip]['packets_ps']    = new Object();
+      stats[info.ip]['size']          = new Object();
 
-      stats[ip]['packets_total']['in'] = 0;
-      stats[ip]['packets_total']['out'] = 0;
-      stats[ip]['size']['in'] = 0;
-      stats[ip]['size']['out'] = 0;
+      stats[info.ip]['packets_total']['in']   = 0;
+      stats[info.ip]['packets_total']['out']  = 0;
+      stats[info.ip]['packets_ps']['in']      = 0;
+      stats[info.ip]['packets_ps']['out']     = 0;
+      stats[info.ip]['size']['in']            = 0;
+      stats[info.ip]['size']['out']           = 0;
+
+      setInterval((function(){
+        var prev = stats[info.ip]['packets_total'][info.dir];
+
+        return function() {
+          stats[info.ip]['packets_ps'][info.dir] = stats[info.ip]['packets_total'][info.dir] - prev;
+          prev = stats[info.ip]['packets_total'][info.dir];
+        }
+      })(), 1000);
     });
-
-    if(stats[packet.saddr]['packets_ps'] === undefined) {
-      stats[packet.saddr]['packets_ps'] = new Object();
-      stats[packet.saddr]['packets_ps']['in'] = 0;
-      stats[packet.saddr]['packets_ps']['out'] = 0;
-
-      setInterval((function(){
-        var prev = stats[packet.saddr]['packets_total']['out'];
-
-        return function() {
-          stats[packet.saddr]['packets_ps']['out'] = stats[packet.saddr]['packets_total']['out'] - prev;
-          prev = stats[packet.saddr]['packets_total']['out'];
-        }
-      })(), 1000);
-    }
-    
-    if(stats[packet.daddr]['packets_ps'] === undefined) {
-      stats[packet.daddr]['packets_ps'] = new Object();
-      stats[packet.daddr]['packets_ps']['in'] = 0;
-      stats[packet.daddr]['packets_ps']['out'] = 0;
-
-      setInterval((function(){
-        var prev = stats[packet.daddr]['packets_total']['in'];
-
-        return function() {
-          stats[packet.daddr]['packets_ps']['in'] = stats[packet.daddr]['packets_total']['in'] - prev;
-          prev = stats[packet.daddr]['packets_total']['in'];
-        }
-      })(), 1000);
-    }
-
-    stats[packet.saddr]['packets_total']['out'] += 1;
-    stats[packet.saddr]['size']['out'] += packet.size;
-
-    stats[packet.daddr]['packets_total']['in'] += 1;
-    stats[packet.daddr]['size']['in'] += packet.size;
   }
   </script>
 </body>
