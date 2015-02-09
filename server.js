@@ -4,6 +4,7 @@ var WebSocketServer = require('ws').Server,
  	pcap 	= require('pcap'),
 	swig 	= require("swig"),
 	http 	= require("http");
+	
 
 var session = pcap.createSession('', 'tcp'),
 	router 	= new Router(),
@@ -12,6 +13,7 @@ var session = pcap.createSession('', 'tcp'),
 	clients = [],
 	my_ips  = get_ip_addresses(session);
 
+var geoloc = require('maxmind-db-reader');
 
 // Websocket server code
 wss.on('connection', function(ws) {
