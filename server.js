@@ -13,7 +13,8 @@ var session = pcap.createSession('', 'tcp'),
 	clients = [],
 	my_ips  = get_ip_addresses(session);
 
-var geoloc = require('maxmind-db-reader');
+var geo_reader = require('maxmind-db-reader');
+var geolocation = geo_reader.openSync('./data/GeoLite2-Country.mmdb');
 
 // Websocket server code
 wss.on('connection', function(ws) {
@@ -49,7 +50,7 @@ function get_ip_addresses(session) {
 		.findalldevs()
 		// Get adresses of the active one
 		.filter(function(all_devs) { return session.device_name === all_devs.name; })[0].addresses
-		.forEach(function(e){ res.push(e.addr) })
+		.forEach(function(e){ res.push(e.addr); res.push(geolocation.getGeoDataSync(e.addr)); })
 
 	return res;
 }
