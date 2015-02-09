@@ -62,8 +62,8 @@ function draw(topo) {
 			var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
 
 			tooltip.classed("hidden", false)
-					.attr("style", "left:"+(mouse[0]+offsetL)+"px;top:"+(mouse[1]+offsetT)+"px")
-					.html(d.properties.name);
+				.attr("style", "left:"+(mouse[0]+offsetL)+"px;top:"+(mouse[1]+offsetT)+"px")
+				.html(d.properties.name);
 		})
 		.on("mouseout",  function(d,i) {
 			tooltip.classed("hidden", true);
@@ -71,6 +71,11 @@ function draw(topo) {
 		.on("click", function(country,i) {
 			filter_country(country);
 		});
+
+	// var route = svg.append("path")
+ //           .datum({type: "LineString", coordinates: [[50,50], [100,50]]})
+ //           .attr("class", "route")
+ //           .attr("d", path);
 }
 
 function redraw() {

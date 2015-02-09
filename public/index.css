@@ -54,3 +54,9 @@ div.tooltip {
   position: absolute;
   font-family: sans-serif;
 }
+
+.route {
+	fill: none;
+	stroke: red; 
+	stroke-width: 1;
+}
