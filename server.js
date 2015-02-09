@@ -30,9 +30,13 @@ wss.on('connection', function(ws) {
 session.on('packet', function(raw_packet) {
 	var packet = pcap.decode.packet(raw_packet);
 
+	var saddr = packet.payload.payload.saddr.toString();
+	var daddr = packet.payload.payload.daddr.toString();
+	var size  = packet.pcap_header.len;
+
 	// Dispatch the packet to all connected clients
 	for (client in clients)
-		clients[client].send(JSON.stringify({"type": "packet", "packet": packet}));
+		clients[client].send(JSON.stringify({"type": "packet", "saddr": saddr, "daddr": daddr, "size": size}));
 });
 
 function log_clients() {
