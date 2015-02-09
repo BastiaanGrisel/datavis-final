@@ -68,7 +68,7 @@
 
   </style>
   <script src="http://d3js.org/d3.v3.min.js"></script>
-  <script src="js/topojson.v1.min.js"></script>
+  <script src="topojson.v1.min.js"></script>
 
 </head>
 <body>
@@ -78,6 +78,7 @@
   <script src="worldmap.js"></script>
   <script>
   var my_ips = [];
+  var stats = new Object(); // Holds the stats per IP
 
   window.onload = function() {
     var ws = new WebSocket('ws://localhost:8080');
@@ -95,7 +96,7 @@
   window.addEventListener('packet_received', function (event) {
     var packet = event.detail;
 
-    console.log(packet.link.ip.saddr + " -> " + packet.link.ip.daddr + " (" + packet.link.ip.tcp.data_bytes + " bytes of payload)");
+    updateStats(packet);
   }, false);
 
   window.addEventListener('ip_received', function (event) {
@@ -104,6 +105,61 @@
     my_ips = packet;
     console.log("My ips are " + my_ips);
   }, false);
+
+
+function updateStats(packet) {
+  [packet.saddr, packet.daddr].forEach(function(ip) {
+    if(stats[ip] !== undefined) return;
+
+    stats[ip] = {
+      'packets_total': {'in': 0,'out': 0},
+      'packets_ps': {'in': 0,'out': 0},
+      'size_total': {'in': 0,'out': 0},
+      'size_ps': {'in': 0,'out': 0}
+    };
+
+    setInterval((function(){
+      var prev_total_packets = {
+        'in': stats[ip]['packets_total']['in'], 
+        'out': stats[ip]['packets_total']['out'] 
+      }
+
+      var prev_total_size = {
+        'in': stats[ip]['size_total']['in'],
+        'out': stats[ip]['size_total']['out']
+      }
+
+      return function() {
+        stats[ip]['packets_ps'] = {
+          'in': stats[ip]['packets_total']['in'] - prev_total_packets.in,
+          'out': stats[ip]['packets_total']['out'] - prev_total_packets.out
+        }
+
+        stats[ip]['size_ps'] = {
+          'in': stats[ip]['size_total']['in'] - prev_total_size.in,
+          'out': stats[ip]['size_total']['out'] - prev_total_size.out
+        }
+
+        prev_total_packets = {
+          'in': stats[ip]['packets_total']['in'], 
+          'out': stats[ip]['packets_total']['out'] 
+        }
+
+        prev_total_size = {
+          'in': stats[ip]['size_total']['in'],
+          'out': stats[ip]['size_total']['out']
+        }
+      }
+    })(), 1000);
+  });
+
+  stats[packet.saddr]['packets_total']['out'] += 1;
+  stats[packet.saddr]['size_total']['out'] += packet.size;
+
+  stats[packet.daddr]['packets_total']['in'] += 1;
+  stats[packet.daddr]['size_total']['in'] += packet.size;
+}
+
   </script>
 </body>
 </html>

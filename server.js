@@ -3,18 +3,17 @@ var WebSocketServer = require('ws').Server,
 	util 	= require('util'),
  	pcap 	= require('pcap'),
 	swig 	= require("swig"),
-	http 	= require("http");
+	http 	= require("http"),
+	geo_reader = require('maxmind-db-reader');
 	
 
 var session = pcap.createSession('', 'tcp'),
+	geolocation = geo_reader.openSync('./public/data/GeoLite2-Country.mmdb'),
 	router 	= new Router(),
 	server 	= http.createServer(router),
 	wss 	= new WebSocketServer({port: 8080}),
 	clients = [],
 	my_ips  = get_ip_addresses(session);
-
-var geo_reader = require('maxmind-db-reader');
-var geolocation = geo_reader.openSync('./data/GeoLite2-Country.mmdb');
 
 // Websocket server code
 wss.on('connection', function(ws) {
@@ -33,9 +32,13 @@ wss.on('connection', function(ws) {
 session.on('packet', function(raw_packet) {
 	var packet = pcap.decode.packet(raw_packet);
 
+	var saddr = packet.payload.payload.saddr.toString();
+	var daddr = packet.payload.payload.daddr.toString();
+	var size  = packet.pcap_header.len;
+
 	// Dispatch the packet to all connected clients
 	for (client in clients)
-		clients[client].send(JSON.stringify({"type": "packet", "packet": packet}));
+		clients[client].send(JSON.stringify({"type": "packet", "packet": {"saddr": saddr, "daddr": daddr, "size": size}}));
 });
 
 function log_clients() {
