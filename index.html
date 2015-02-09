@@ -26,7 +26,17 @@
   window.addEventListener('packet_received', function (event) {
     var packet = event.detail;
 
-    // Update the stats
+    updateStats(packet);
+  }, false);
+
+  window.addEventListener('ip_received', function (event) {
+    var packet = event.detail;
+
+    my_ips = packet;
+    console.log("My ips are " + my_ips);
+  }, false);
+
+  function updateStats(packet) {
     [packet.saddr, packet.daddr].forEach(function(ip) {
       if(stats[ip] !== undefined) return;
 
@@ -45,15 +55,7 @@
 
     stats[packet.daddr]['packets']['in'] += 1;
     stats[packet.daddr]['size']['in'] += packet.size;
-
-  }, false);
-
-  window.addEventListener('ip_received', function (event) {
-    var packet = event.detail;
-
-    my_ips = packet;
-    console.log("My ips are " + my_ips);
-  }, false);
+  }
   </script>
 </body>
 </html>
