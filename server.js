@@ -36,7 +36,7 @@ session.on('packet', function(raw_packet) {
 
 	// Dispatch the packet to all connected clients
 	for (client in clients)
-		clients[client].send(JSON.stringify({"type": "packet", "saddr": saddr, "daddr": daddr, "size": size}));
+		clients[client].send(JSON.stringify({"type": "packet", "packet": {"saddr": saddr, "daddr": daddr, "size": size}}));
 });
 
 function log_clients() {

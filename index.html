@@ -4,26 +4,6 @@
   <title>Packet Capture</title>
 
   <script src="http://d3js.org/d3.v3.min.js"></script>
-
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .line {
-      fill: black;
-      stroke: #000;
-      stroke-width: 1.5px;
-    }
-
-    svg {
-      /*shape-rendering: crispEdges;*/
-      vertical-align:top; /* Fix to remove unwanted 5px padding in html */
-    }
-  </style>
 </head>
 <body>
   <script>
@@ -40,136 +20,22 @@
         case "ip"     : window.dispatchEvent(new CustomEvent('ip_received', {"detail": msg.ip})); break;
       }
     }
-
-    var number_of_bins = 50;
-    var bins_per_second = 5;
-    bins = [new Array()];
-
-    // Create two graphs in D3
-    var width  = window.innerWidth,
-        height = window.innerHeight;
-
-    graph_out = d3.select("body").append("svg")
-      .attr("width", width)
-      .attr("height", height/2)
-
-    graph_in = d3.select("body").append("svg")
-      .attr("width", width)
-      .attr("height", height/2)
-      .attr("transform", "translate(0,"+ height/2 +")")
-
-    var x_out = d3.scale.linear()
-      .domain([0, number_of_bins-1])
-      .range([0, width]);
-
-    var y_out = d3.scale.linear()
-      .domain([0, 2000])
-      .range([0, height/2]);
-
-    var area_out = d3.svg.area()
-      .x(function(d, i) { return x_out(i); })
-      .y0(0)
-      .y1(function(d) { return y_out(d.reduce(totalBinSize, 0)); })
-      .interpolate("basis");
-
-    var x_in = d3.scale.linear()
-      .domain([0, number_of_bins-1])
-      .range([width, 0]);
-
-    var y_in = d3.scale.linear()
-      .domain([0, 2000])
-      .range([height/2, 0]);
-
-    var area_in = d3.svg.area()
-      .x(function(d, i) { return x_in(i); })
-      .y0(height/2)
-      .y1(function(d) { return y_in(d.reduce(totalBinSize, 0)); })
-      .interpolate("basis");
-
-    path_out = graph_out
-      .append("path")
-      .datum(bins)
-      .attr("class", "line")
-      .attr("d", area_out);
-
-    path_in = graph_in
-      .append("path")
-      .datum(bins)
-      .attr("class", "line")
-      .attr("d", area_in);
-
-    tick();
-
-    function tick() {      
-      // Create a new bin and add it to the beginning of the array
-      bins.unshift(new Array());
-
-      // Only keep the relevant bins and throw away the old ones
-      bins = bins.splice(0, number_of_bins);
-
-      // Split bins
-      bins_in = bins.map(filterIncoming);
-      bins_out = bins.map(filterOutgoing);
-
-      // Resize axes
-      y_in.domain([0, bins_in.reduce(maxBinSize, 0)]);
-      y_out.domain([0, bins_out.reduce(maxBinSize, 0)]);
-
-      path_in
-        .datum(bins_in)
-        .attr("d", area_in)
-
-      path_out
-        .datum(bins_out)
-        .attr("d", area_out)
-
-      setTimeout(tick, 1000/bins_per_second);
-    }
   }
-
-  // Returns only incoming packets in the bin
-  function filterIncoming(bin) {
-    return bin.filter(function(packet) {
-      return contains(my_ips, packet.link.ip.daddr);
-    })
-  }
-
-  // Returns only out going packets in the bin
-  function filterOutgoing(bin) {
-    return bin.filter(function(packet) {
-      return contains(my_ips, packet.link.ip.saddr);
-    })
-  }
-
-  function contains(array, element) {
-    return array.indexOf(element) != -1;
-  }
-
-  function flatten(a, b) {
-    return a.concat(b);
-  }
-
-  function maxBinSize(bin_prev, bin_curr){
-    var bin_size = bin_curr.reduce(totalBinSize, 0);
-
-    return bin_size > bin_prev ? bin_size : bin_prev;
-  }
-
-  function totalBinSize(prev, current){ return prev + current.link.ip.total_length }
 
   window.addEventListener('packet_received', function (event) {
     var packet = event.detail;
 
+    console.log(packet);
     // console.log(packet.link.ip.saddr + " -> " + packet.link.ip.daddr + " (" + packet.link.ip.tcp.data_bytes + " bytes of payload)");
 
-    bins[0].unshift(packet);
+    // d3.select('body').append(JSON.serialize(packet))
   }, false);
 
   window.addEventListener('ip_received', function (event) {
     var packet = event.detail;
 
     my_ips = packet;
-    // console.log("My ips are " + my_ips);
+    console.log("My ips are " + my_ips);
   }, false);
   </script>
 </body>
