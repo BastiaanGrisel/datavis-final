@@ -120,7 +120,6 @@ function filter_country(country) {
 
 //function to add points and text to the map (used in plotting capitals)
 function addpoint(lat,lon,text) {
-
 	var gpoint = g.append("g").attr("class", "gpoint");
 	var x = projection([lat,lon])[0];
 	var y = projection([lat,lon])[1];
