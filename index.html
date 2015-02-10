@@ -37,7 +37,9 @@
 	var my_ip = [];
 	var stats = new Object(); // Holds the stats per IP
 	var countries = {};
-	var clients = {};
+	var clients = {};\
+	var country_interval;
+	var client_interval;
 
 	window.onload = function() {
 		d3.json("data/world-topo-min.json", function(error, world) {
@@ -87,7 +89,6 @@
 			  'size_total': {'in': 0,'out': 0},
 			  'size_ps': {'in': 0,'out': 0}
 			};
-		var country_interval;
 		if(country_interval === undefined) {
 			country_interval = setInterval((function(){
 			console.log("Starting a countries thread");
@@ -134,7 +135,6 @@
 		  'size_total': {'in': 0,'out': 0,'sum': 0},
 		  'size_ps': {'in': 0,'out': 0,'sum': 0}}
 		};
-		var client_interval;
 		if(client_interval === undefined) {
 		  client_interval = setInterval((function(){
 			console.log("Starting a clients thread");
