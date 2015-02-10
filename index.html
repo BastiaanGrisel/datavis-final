@@ -124,7 +124,7 @@
 	    })(), 1000);
 	  });
 	  [packet.saddr, packet.daddr].forEach(function(address) { 
-	  if(clients[address]['stats'] !== undefined) return;
+	  if(clients[address] !== undefined) return;
 
 		clients[address]['stats'] = {
 		  'packets_total': {'in': 0,'out': 0},
