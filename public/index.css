@@ -3,6 +3,8 @@ html, body {
 	width: 100%;
 	margin: 0;
 	padding: 0;
+	font-family: sans-serif;	
+	position: relative;
 }
 
 svg {
@@ -11,21 +13,18 @@ svg {
 
 /* Containers */
 #map_container {
-	width: 80%;
-	height: 80%;
-	float: left;
+	width: 100%;
+	height: 100%;
 }
 
 #ip_list {
 	width: 20%;
-	height: 80%;
-	float: left;
-}
-
-#intensity_feed {
-	width: 100%;
-	height: 20%;
-	clear: both;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	right: 0;
+	background: rgba(255,255,255,0.7);
+	padding: 20px;
 }
 
 /*.country {
@@ -52,7 +51,6 @@ div.tooltip {
   padding: .5em .5em .4em .5em; 
   opacity: 0.9; 
   position: absolute;
-  font-family: sans-serif;
 }
 
 .route {
