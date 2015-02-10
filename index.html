@@ -126,11 +126,11 @@
 	  [packet.saddr, packet.daddr].forEach(function(address) { 
 	  if(clients[address] !== undefined) return;
 
-		clients[address]['stats'] = {
+		clients[address] = {stats: {
 		  'packets_total': {'in': 0,'out': 0},
 		  'packets_ps': {'in': 0,'out': 0},
 		  'size_total': {'in': 0,'out': 0},
-		  'size_ps': {'in': 0,'out': 0}
+		  'size_ps': {'in': 0,'out': 0}}
 		};
 	  var client_interval = setInterval((function(){
 	      var client_prev_total_packets = {
