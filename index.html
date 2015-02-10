@@ -18,16 +18,16 @@
 			<th>pps</th>
 			<th>mbps</th>
 		</thead>
-		<tr><td class="ip_list_1_dest"></td><td class="ip_list_1_ppm"></td><td class="ip_list_1_mbps"></td></tr>
-		<tr><td class="ip_list_2_dest"></td><td class="ip_list_2_ppm"></td><td class="ip_list_2_mbps"></td></tr>
-		<tr><td class="ip_list_3_dest"></td><td class="ip_list_3_ppm"></td><td class="ip_list_3_mbps"></td></tr>
-		<tr><td class="ip_list_4_dest"></td><td class="ip_list_4_ppm"></td><td class="ip_list_4_mbps"></td></tr>
-		<tr><td class="ip_list_5_dest"></td><td class="ip_list_5_ppm"></td><td class="ip_list_5_mbps"></td></tr>
-		<tr><td class="ip_list_6_dest"></td><td class="ip_list_6_ppm"></td><td class="ip_list_6_mbps"></td></tr>
-		<tr><td class="ip_list_7_dest"></td><td class="ip_list_7_ppm"></td><td class="ip_list_7_mbps"></td></tr>
-		<tr><td class="ip_list_8_dest"></td><td class="ip_list_8_ppm"></td><td class="ip_list_8_mbps"></td></tr>
-		<tr><td class="ip_list_9_dest"></td><td class="ip_list_9_ppm"></td><td class="ip_list_9_mbps"></td></tr>
-		<tr><td class="ip_list_10_dest"></td><td class="ip_list_10_ppm"></td><td class="ip_list_10_mbps"></td></tr>
+		<tr><td id="ip_list_1_dest"></td><td id="ip_list_1_ppm"></td><td id="ip_list_1_mbps"></td></tr>
+		<tr><td id="ip_list_2_dest"></td><td id="ip_list_2_ppm"></td><td id="ip_list_2_mbps"></td></tr>
+		<tr><td id="ip_list_3_dest"></td><td id="ip_list_3_ppm"></td><td id="ip_list_3_mbps"></td></tr>
+		<tr><td id="ip_list_4_dest"></td><td id="ip_list_4_ppm"></td><td id="ip_list_4_mbps"></td></tr>
+		<tr><td id="ip_list_5_dest"></td><td id="ip_list_5_ppm"></td><td id="ip_list_5_mbps"></td></tr>
+		<tr><td id="ip_list_6_dest"></td><td id="ip_list_6_ppm"></td><td id="ip_list_6_mbps"></td></tr>
+		<tr><td id="ip_list_7_dest"></td><td id="ip_list_7_ppm"></td><td id="ip_list_7_mbps"></td></tr>
+		<tr><td id="ip_list_8_dest"></td><td id="ip_list_8_ppm"></td><td id="ip_list_8_mbps"></td></tr>
+		<tr><td id="ip_list_9_dest"></td><td id="ip_list_9_ppm"></td><td id="ip_list_9_mbps"></td></tr>
+		<tr><td id="ip_list_10_dest"></td><td id="ip_list_10_ppm"></td><td id="ip_list_10_mbps"></td></tr>
 	</table>
   </div>
 
@@ -37,6 +37,8 @@
 	var stats = new Object(); // Holds the stats per IP
 	var countries = {};
 	var clients = {};
+	var country_interval;
+	var client_interval;
 
 	window.onload = function() {
 		d3.json("data/world-topo-min.json", function(error, world) {
@@ -87,84 +89,97 @@
 			  'size_total': {'in': 0,'out': 0},
 			  'size_ps': {'in': 0,'out': 0}
 			};
+		if(country_interval === undefined) {
+			country_interval = setInterval((function(){
+			console.log("Starting a countries thread");
+			  var country_prev_total_packets = {
+				'in': countries[country]['stats']['packets_total']['in'], 
+				'out': countries[country]['stats']['packets_total']['out'] 
+			  }
 
-	    var country_interval = setInterval((function(){
-	      var country_prev_total_packets = {
-	        'in': countries[country]['stats']['packets_total']['in'], 
-	        'out': countries[country]['stats']['packets_total']['out'] 
-	      }
+			  var country_prev_total_size = {
+				'in': countries[country]['stats']['size_total']['in'],
+				'out': countries[country]['stats']['size_total']['out']
+			  }
 
-	      var country_prev_total_size = {
-	        'in': countries[country]['stats']['size_total']['in'],
-	        'out': countries[country]['stats']['size_total']['out']
-	      }
+			  return function() {
+				countries[country]['stats']['packets_ps'] = {
+				  'in': countries[country]['stats']['packets_total']['in'] - country_prev_total_packets.in,
+				  'out': countries[country]['stats']['packets_total']['out'] - country_prev_total_packets.out
+				}
 
-	      return function() {
-	        countries[country]['stats']['packets_ps'] = {
-	          'in': countries[country]['stats']['packets_total']['in'] - country_prev_total_packets.in,
-	          'out': countries[country]['stats']['packets_total']['out'] - country_prev_total_packets.out
-	        }
+				countries[country]['stats']['size_ps'] = {
+				  'in': countries[country]['stats']['size_total']['in'] - country_prev_total_size.in,
+				  'out': countries[country]['stats']['size_total']['out'] - country_prev_total_size.out
+				}
 
-	        countries[country]['stats']['size_ps'] = {
-	          'in': countries[country]['stats']['size_total']['in'] - country_prev_total_size.in,
-	          'out': countries[country]['stats']['size_total']['out'] - country_prev_total_size.out
-	        }
+				prev_total_packets = {
+				  'in': countries[country]['stats']['packets_total']['in'], 
+				  'out': countries[country]['stats']['packets_total']['out'] 
+				}
 
-	        prev_total_packets = {
-	          'in': countries[country]['stats']['packets_total']['in'], 
-	          'out': countries[country]['stats']['packets_total']['out'] 
-	        }
-
-	        prev_total_size = {
-	          'in': countries[country]['stats']['size_total']['in'],
-	          'out': countries[country]['stats']['size_total']['out']
-	        }
-	      }
-	    })(), 1000);
-	  });
+				prev_total_size = {
+				  'in': countries[country]['stats']['size_total']['in'],
+				  'out': countries[country]['stats']['size_total']['out']
+				}
+			  }
+			})(), 1000);
+			}
+		  });
 	  [packet.saddr, packet.daddr].forEach(function(address) { 
 	  if(clients[address] !== undefined) return;
 
 		clients[address] = {stats: {
-		  'packets_total': {'in': 0,'out': 0},
-		  'packets_ps': {'in': 0,'out': 0},
-		  'size_total': {'in': 0,'out': 0},
-		  'size_ps': {'in': 0,'out': 0}}
+		  'packets_total': {'in': 0,'out': 0,'sum': 0},
+		  'packets_ps': {'in': 0,'out': 0,'sum': 0},
+		  'size_total': {'in': 0,'out': 0,'sum': 0},
+		  'size_ps': {'in': 0,'out': 0,'sum': 0}}
 		};
-	  var client_interval = setInterval((function(){
-	      var client_prev_total_packets = {
-	        'in': clients[address]['stats']['packets_total']['in'], 
-	        'out': clients[address]['stats']['packets_total']['out'] 
-	      }
+		if(client_interval === undefined) {
+		  client_interval = setInterval((function(){
+			console.log("Starting a clients thread");
+			  var client_prev_total_packets = {
+				'in': clients[address]['stats']['packets_total']['in'], 
+				'out': clients[address]['stats']['packets_total']['out'],
+				'sum': clients[address]['stats']['packets_total']['sum'] 
+			  }
 
-	      var client_prev_total_size = {
-	        'in': clients[address]['stats']['size_total']['in'],
-	        'out': clients[address]['stats']['size_total']['out']
-	      }
+			  var client_prev_total_size = {
+				'in': clients[address]['stats']['size_total']['in'],
+				'out': clients[address]['stats']['size_total']['out'],
+				'sum': clients[address]['stats']['packets_total']['sum'] 
+			  }
 
-	      return function() {
-	        clients[address]['stats']['packets_ps'] = {
-	          'in': clients[address]['stats']['packets_total']['in'] - client_prev_total_packets.in,
-	          'out': clients[address]['stats']['packets_total']['out'] - client_prev_total_packets.out
-	        }
+			  return function() {
+				clients[address]['stats']['packets_ps'] = {
+				  'in': clients[address]['stats']['packets_total']['in'] - client_prev_total_packets.in,
+				  'out': clients[address]['stats']['packets_total']['out'] - client_prev_total_packets.out,
+				  'sum': clients[address]['stats']['packets_total']['in'] + 
+				  clients[address]['stats']['packets_total']['out'] - client_prev_total_packets.sum
+				}
 
-	        clients[address]['stats']['size_ps'] = {
-	          'in': clients[address]['stats']['size_total']['in'] - client_prev_total_size.in,
-	          'out': clients[address]['stats']['size_total']['out'] - client_prev_total_size.out
-	        }
+				clients[address]['stats']['size_ps'] = {
+				  'in': clients[address]['stats']['size_total']['in'] - client_prev_total_size.in,
+				  'out': clients[address]['stats']['size_total']['out'] - client_prev_total_size.out,
+				  'sum': clients[address]['stats']['size_total']['in'] + 
+				  clients[address]['stats']['size_total']['out'] - client_prev_total_size.sum
+				}
 
-	        prev_total_packets = {
-	          'in': clients[address]['stats']['packets_total']['in'], 
-	          'out': clients[address]['stats']['packets_total']['out'] 
-	        }
+				prev_total_packets = {
+				  'in': clients[address]['stats']['packets_total']['in'], 
+				  'out': clients[address]['stats']['packets_total']['out'],
+				  'sum': clients[address]['stats']['packets_total']['sum']
+				}
 
-	        prev_total_size = {
-	          'in': clients[address]['stats']['size_total']['in'],
-	          'out': clients[address]['stats']['size_total']['out']
-	        }
-	      }
-	    })(), 1000);
-	  });
+				prev_total_size = {
+				  'in': clients[address]['stats']['size_total']['in'],
+				  'out': clients[address]['stats']['size_total']['out'],
+				  'sum': clients[address]['stats']['size_total']['sum']
+				}
+			  }
+			})(), 1000);
+			}
+		  });
 
 	  countries[packet.sloc]['stats']['packets_total']['out'] += 1;
 	  countries[packet.sloc]['stats']['size_total']['out'] += packet.size;
@@ -173,10 +188,14 @@
 	  countries[packet.dloc]['stats']['size_total']['in'] += packet.size;
 	  
 	  clients[packet.daddr]['stats']['packets_total']['out'] += 1;
+	  clients[packet.daddr]['stats']['packets_total']['sum'] += 1;
 	  clients[packet.daddr]['stats']['size_total']['out'] += packet.size;
+	  clients[packet.daddr]['stats']['size_total']['sum'] += packet.size;
 
 	  clients[packet.saddr]['stats']['packets_total']['in'] += 1;
+	  clients[packet.saddr]['stats']['packets_total']['sum'] += 1;
 	  clients[packet.saddr]['stats']['size_total']['in'] += packet.size;
+	  clients[packet.saddr]['stats']['size_total']['sum'] += packet.size;
 	  
 	  updateList();
 	}
@@ -189,56 +208,21 @@
 		};
 		//sort order
 		order.sort(function(a,b){
-			if(clients[a]['stats']['packets_ps']['in'] + clients[a]['stats']['packets_ps']['out'] <
-				clients[b]['stats']['packets_ps']['in'] + clients[b]['stats']['packets_ps']['out'])
-				return -1;
-			if(clients[a]['stats']['packets_ps']['in'] + clients[a]['stats']['packets_ps']['out'] >
-				clients[b]['stats']['packets_ps']['in'] + clients[b]['stats']['packets_ps']['out'])
+			if(clients[a]['stats']['packets_ps']['sum'] < clients[b]['stats']['packets_ps']['sum'])
+				return 1;
+			if(clients[a]['stats']['packets_ps']['sum'] > clients[b]['stats']['packets_ps']['sum'])
 				return -1;
 			return 0;
 		});
 		//cut off at 10
 		order = order.slice(0,10);
-		$("#ip_list_1_dest").innerHTML = order[0];
-		$("#ip_list_1_ppm").innerHTML = clients[order[0]]['stats']['packets_ps'];
-		$("#ip_list_1_mbps").innerHTML = clients[order[0]]['stats']['size_ps'];
-		
-		$("#ip_list_2_dest").innerHTML = order[1];
-		$("#ip_list_2_ppm").innerHTML = clients[order[1]]['stats']['packets_ps'];
-		$("#ip_list_2_mbps").innerHTML = clients[order[1]]['stats']['size_ps'];
-
-		$("#ip_list_3_dest").innerHTML = order[2];
-		$("#ip_list_3_ppm").innerHTML = clients[order[2]]['stats']['packets_ps'];
-		$("#ip_list_3_mbps").innerHTML = clients[order[2]]['stats']['size_ps'];
-
-		$("#ip_list_4_dest").innerHTML = order[3];
-		$("#ip_list_4_ppm").innerHTML = clients[order[3]]['stats']['packets_ps'];
-		$("#ip_list_4_mbps").innerHTML = clients[order[3]]['stats']['size_ps'];
-
-		$("#ip_list_5_dest").innerHTML = order[4];
-		$("#ip_list_5_ppm").innerHTML = clients[order[4]]['stats']['packets_ps'];
-		$("#ip_list_5_mbps").innerHTML = clients[order[4]]['stats']['size_ps'];
-
-		$("#ip_list_6_dest").innerHTML = order[5];
-		$("#ip_list_6_ppm").innerHTML = clients[order[5]]['stats']['packets_ps'];
-		$("#ip_list_6_mbps").innerHTML = clients[order[5]]['stats']['size_ps'];
-
-		$("#ip_list_7_dest").innerHTML = order[6];
-		$("#ip_list_7_ppm").innerHTML = clients[order[6]]['stats']['packets_ps'];
-		$("#ip_list_7_mbps").innerHTML = clients[order[6]]['stats']['size_ps'];
-
-		$("#ip_list_8_dest").innerHTML = order[7];
-		$("#ip_list_8_ppm").innerHTML = clients[order[7]]['stats']['packets_ps'];
-		$("#ip_list_8_mbps").innerHTML = clients[order[7]]['stats']['size_ps'];
-
-		$("#ip_list_9_dest").innerHTML = order[8];
-		$("#ip_list_9_ppm").innerHTML = clients[order[8]]['stats']['packets_ps'];
-		$("#ip_list_9_mbps").innerHTML = clients[order[8]]['stats']['size_ps'];
-
-		$("#ip_list_10_dest").innerHTML = order[9];
-		$("#ip_list_10_ppm").innerHTML = clients[order[9]]['stats']['packets_ps'];
-		$("#ip_list_10_mbps").innerHTML = clients[order[9]]['stats']['size_ps'];
-
+		var i = 0;
+		for(var o in order) {
+			document.getElementById("ip_list_"+(i+1)+"_dest").innerHTML = order[i];
+			document.getElementById("ip_list_"+(i+1)+"_ppm").innerHTML = clients[order[i]]['stats']['packets_ps']['sum'];
+			document.getElementById("ip_list_"+(i+1)+"_mbps").innerHTML = clients[order[i]]['stats']['size_ps']['sum'];
+			i++;
+		}
 	}
   </script>
 </body>
