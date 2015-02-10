@@ -89,9 +89,8 @@
 			  'size_total': {'in': 0,'out': 0},
 			  'size_ps': {'in': 0,'out': 0}
 			};
-		if(country_interval === undefined) {
-			country_interval = setInterval((function(){
-			console.log("Starting a countries thread");
+
+			setInterval((function(){
 			  var country_prev_total_packets = {
 				'in': countries[country]['stats']['packets_total']['in'], 
 				'out': countries[country]['stats']['packets_total']['out'] 
@@ -113,18 +112,17 @@
 				  'out': countries[country]['stats']['size_total']['out'] - country_prev_total_size.out
 				}
 
-				prev_total_packets = {
+				country_prev_total_packets = {
 				  'in': countries[country]['stats']['packets_total']['in'], 
 				  'out': countries[country]['stats']['packets_total']['out'] 
 				}
 
-				prev_total_size = {
+				country_prev_total_size = {
 				  'in': countries[country]['stats']['size_total']['in'],
 				  'out': countries[country]['stats']['size_total']['out']
 				}
 			  }
 			})(), 1000);
-			}
 		  });
 	  [packet.saddr, packet.daddr].forEach(function(address) { 
 	  if(clients[address] !== undefined) return;
@@ -135,9 +133,7 @@
 		  'size_total': {'in': 0,'out': 0,'sum': 0},
 		  'size_ps': {'in': 0,'out': 0,'sum': 0}}
 		};
-		if(client_interval === undefined) {
-		  client_interval = setInterval((function(){
-			console.log("Starting a clients thread");
+		setInterval((function(){
 			  var client_prev_total_packets = {
 				'in': clients[address]['stats']['packets_total']['in'], 
 				'out': clients[address]['stats']['packets_total']['out'],
@@ -165,20 +161,19 @@
 				  clients[address]['stats']['size_total']['out'] - client_prev_total_size.sum
 				}
 
-				prev_total_packets = {
+				client_prev_total_packets = {
 				  'in': clients[address]['stats']['packets_total']['in'], 
 				  'out': clients[address]['stats']['packets_total']['out'],
 				  'sum': clients[address]['stats']['packets_total']['sum']
 				}
 
-				prev_total_size = {
+				client_prev_total_size = {
 				  'in': clients[address]['stats']['size_total']['in'],
 				  'out': clients[address]['stats']['size_total']['out'],
 				  'sum': clients[address]['stats']['size_total']['sum']
 				}
 			  }
 			})(), 1000);
-			}
 		  });
 
 	  countries[packet.sloc]['stats']['packets_total']['out'] += 1;
