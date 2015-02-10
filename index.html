@@ -87,8 +87,9 @@
 			  'size_total': {'in': 0,'out': 0},
 			  'size_ps': {'in': 0,'out': 0}
 			};
-		if(country_interval == undefined) {
-			var country_interval = setInterval((function(){
+		var country_interval;
+		if(country_interval === undefined) {
+			country_interval = setInterval((function(){
 			  var country_prev_total_packets = {
 				'in': countries[country]['stats']['packets_total']['in'], 
 				'out': countries[country]['stats']['packets_total']['out'] 
@@ -132,16 +133,19 @@
 		  'size_total': {'in': 0,'out': 0,'sum': 0},
 		  'size_ps': {'in': 0,'out': 0,'sum': 0}}
 		};
-		if(client_interval == undefined) {
-		  var client_interval = setInterval((function(){
+		var client_interval;
+		if(client_interval === undefined) {
+		  client_interval = setInterval((function(){
 			  var client_prev_total_packets = {
 				'in': clients[address]['stats']['packets_total']['in'], 
-				'out': clients[address]['stats']['packets_total']['out'] 
+				'out': clients[address]['stats']['packets_total']['out'],
+				'sum': clients[address]['stats']['packets_total']['sum'] 
 			  }
 
 			  var client_prev_total_size = {
 				'in': clients[address]['stats']['size_total']['in'],
-				'out': clients[address]['stats']['size_total']['out']
+				'out': clients[address]['stats']['size_total']['out'],
+				'sum': clients[address]['stats']['packets_total']['sum'] 
 			  }
 
 			  return function() {
@@ -210,46 +214,13 @@
 		});
 		//cut off at 10
 		order = order.slice(0,10);
-		document.getElementById("ip_list_1_dest").innerHTML = order[0];
-		document.getElementById("ip_list_1_ppm").innerHTML = clients[order[0]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_1_mbps").innerHTML = clients[order[0]]['stats']['size_ps']['sum'];
-		
-		document.getElementById("ip_list_2_dest").innerHTML = order[1];
-		document.getElementById("ip_list_2_ppm").innerHTML = clients[order[1]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_2_mbps").innerHTML = clients[order[1]]['stats']['size_ps']['sum'];
-
-		document.getElementById("ip_list_3_dest").innerHTML = order[2];
-		document.getElementById("ip_list_3_ppm").innerHTML = clients[order[2]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_3_mbps").innerHTML = clients[order[2]]['stats']['size_ps']['sum'];
-
-		document.getElementById("ip_list_4_dest").innerHTML = order[3];
-		document.getElementById("ip_list_4_ppm").innerHTML = clients[order[3]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_4_mbps").innerHTML = clients[order[3]]['stats']['size_ps']['sum'];
-
-		document.getElementById("ip_list_5_dest").innerHTML = order[4];
-		document.getElementById("ip_list_5_ppm").innerHTML = clients[order[4]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_5_mbps").innerHTML = clients[order[4]]['stats']['size_ps']['sum'];
-
-		document.getElementById("ip_list_6_dest").innerHTML = order[5];
-		document.getElementById("ip_list_6_ppm").innerHTML = clients[order[5]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_6_mbps").innerHTML = clients[order[5]]['stats']['size_ps']['sum'];
-
-		document.getElementById("ip_list_7_dest").innerHTML = order[6];
-		document.getElementById("ip_list_7_ppm").innerHTML = clients[order[6]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_7_mbps").innerHTML = clients[order[6]]['stats']['size_ps']['sum'];
-
-		document.getElementById("ip_list_8_dest").innerHTML = order[7];
-		document.getElementById("ip_list_8_ppm").innerHTML = clients[order[7]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_8_mbps").innerHTML = clients[order[7]]['stats']['size_ps']['sum'];
-
-		document.getElementById("ip_list_9_dest").innerHTML = order[8];
-		document.getElementById("ip_list_9_ppm").innerHTML = clients[order[8]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_9_mbps").innerHTML = clients[order[8]]['stats']['size_ps']['sum'];
-
-		document.getElementById("ip_list_10_dest").innerHTML = order[9];
-		document.getElementById("ip_list_10_ppm").innerHTML = clients[order[9]]['stats']['packets_ps']['sum'];
-		document.getElementById("ip_list_10_mbps").innerHTML = clients[order[9]]['stats']['size_ps']['sum'];
-
+		var i = 0;
+		for(var o in order) {
+			document.getElementById("ip_list_"+(i+1)+"_dest").innerHTML = order[i];
+			document.getElementById("ip_list_"+(i+1)+"_ppm").innerHTML = clients[order[i]]['stats']['packets_ps']['sum'];
+			document.getElementById("ip_list_1"+(i+1)+"_mbps").innerHTML = clients[order[i]]['stats']['size_ps']['sum'];
+			i++;
+		}
 	}
 
 	function sendPacket(from, to) {
