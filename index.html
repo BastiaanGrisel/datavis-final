@@ -88,9 +88,7 @@
 			  'size_total': {'in': 0,'out': 0},
 			  'size_ps': {'in': 0,'out': 0}
 			};
-		
-		
-	    };
+	    });
 	  [packet.saddr, packet.daddr].forEach(function(address) { 
 		if(clients[address]['stats'] !== undefined) return;
 
@@ -100,7 +98,7 @@
 			  'size_total': {'in': 0,'out': 0},
 			  'size_ps': {'in': 0,'out': 0}
 			};
-	    };
+	    });
 
 	    var country_interval = setInterval((function(){
 	      var country_prev_total_packets = {
