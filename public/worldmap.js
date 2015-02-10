@@ -9,7 +9,7 @@ var zoom = d3.behavior.zoom()
 
 var topo,projection,path,svg,g;
 
-// var graticule = d3.geo.graticule();
+var country_color = d3.scale.linear().domain([0, 10000]).range(["#ccc", "red"]);
 
 var tooltip = d3.select("#map_container").append("div").attr("class", "tooltip hidden");
 
@@ -32,9 +32,17 @@ function setup(width, height) {
 	g = svg.append("g");
 }
 
-
-
 function draw(topo) {
+	country_color.domain([0, d3.max(topo, function(d) { 
+		if(d.stats !== undefined) {
+			return  d.stats.packets_total.in + 
+					d.stats.packets_total.out + 
+					d.stats.size_total.in + 
+					d.stats.size_total.out;
+		}
+		return 10000;
+	})]);
+
 	var country = g.selectAll(".country").data(topo);
 
 	country.enter().insert("path")
@@ -42,7 +50,21 @@ function draw(topo) {
 		.attr("d", path)
 		.attr("id", function(d,i) { return d.id; })
 		.attr("title", function(d,i) { return d.properties.name; })
-		.attr("fill", function(d, i) { return d.properties.color; });
+		.attr("fill", function(d, i) { 
+			if(d.stats !== undefined) {
+				return country_color(
+					d.stats.packets_total.in + 
+					d.stats.packets_total.out + 
+					// d.stats.packets_ps.in + 
+					// d.stats.packets_ps.out + 
+					d.stats.size_total.in + 
+					d.stats.size_total.out 
+					// d.stats.size_ps.in + 
+					// d.stats.size_ps.out
+					)
+			}
+			return d.properties.color; 
+		})
 
 	// offsets for tooltips
 	var offsetL = document.getElementById('map_container').offsetLeft+20;
@@ -75,7 +97,7 @@ function redraw() {
 	height = width / 2;
 	d3.select('svg').remove();
 	setup(width,height);
-	draw(topo);
+	draw(_.values(countries));
 }
 
 function move() {
@@ -83,7 +105,6 @@ function move() {
 	var s = d3.event.scale; 
 	zscale = s;
 	var h = map_height/4;
-
 
 	t[0] = Math.min(
 		(map_width/map_height)  * (s - 1), 

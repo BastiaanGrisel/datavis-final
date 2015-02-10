@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="index.css" />
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="topojson.v1.min.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
 
 </head>
 <body>
@@ -19,31 +20,32 @@
 	var stats = new Object(); // Holds the stats per IP
 	var countries = {};
 
-	d3.json("data/world-topo-min.json", function(error, world) {
-		list = topojson.feature(world, world.objects.countries).features;
-		list.forEach(function(country){
-			country.properties.color = "#CCCCCC";
-			countries[country.properties.name] = country;
-		});
-		
-		// draw(countries);
-
-		window.addEventListener('packet_received', function (event) {
-			var packet = event.detail;
-
-			updateStats(packet);
-			// sendPacket(packet.sloc, packet.dloc);
-		}, false);
-
-		window.addEventListener('ip_received', function (event) {
-			var packet = event.detail;
-
-			my_ip = packet;
-			console.log("My ip is " + my_ip);
-		}, false);
-	});
-
 	window.onload = function() {
+		d3.json("data/world-topo-min.json", function(error, world) {
+			list = topojson.feature(world, world.objects.countries).features;
+			list.forEach(function(country){
+				country.properties.color = "#CCCCCC";
+				countries[country.properties.name] = country;
+			});
+			
+			draw(_.values(countries));
+
+			window.addEventListener('packet_received', function (event) {
+				var packet = event.detail;
+
+				updateStats(packet);
+				// sendPacket(packet.sloc, packet.dloc);
+				throttle();
+			}, false);
+
+			window.addEventListener('ip_received', function (event) {
+				var packet = event.detail;
+
+				my_ip = packet;
+				console.log("My ip is " + my_ip);
+			}, false);
+		});
+
 		var ws = new WebSocket('ws://localhost:8080');
 
 		ws.onmessage = function(event) {

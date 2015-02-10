@@ -28,9 +28,9 @@ svg {
 	clear: both;
 }
 
-.country {
+/*.country {
 	fill: #ccc;
-}
+}*/
 
 .country:hover {
   fill: #aaa;
