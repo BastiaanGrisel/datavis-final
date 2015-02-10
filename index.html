@@ -17,6 +17,31 @@
   <script>
 	var my_ip = [];
 	var stats = new Object(); // Holds the stats per IP
+	var countries = {};
+
+	d3.json("data/world-topo-min.json", function(error, world) {
+		list = topojson.feature(world, world.objects.countries).features;
+		list.forEach(function(country){
+			country.properties.color = "#CCCCCC";
+			countries[country.properties.name] = country;
+		});
+		
+		// draw(countries);
+
+		window.addEventListener('packet_received', function (event) {
+			var packet = event.detail;
+
+			updateStats(packet);
+			// sendPacket(packet.sloc, packet.dloc);
+		}, false);
+
+		window.addEventListener('ip_received', function (event) {
+			var packet = event.detail;
+
+			my_ip = packet;
+			console.log("My ip is " + my_ip);
+		}, false);
+	});
 
 	window.onload = function() {
 		var ws = new WebSocket('ws://localhost:8080');
@@ -31,25 +56,11 @@
 		}
 	}
 
-	window.addEventListener('packet_received', function (event) {
-		var packet = event.detail;
-
-		updateStats(packet);
-		sendPacket(packet.sloc, packet.dloc);
-	}, false);
-
-	window.addEventListener('ip_received', function (event) {
-		var packet = event.detail;
-
-		my_ip = packet;
-		console.log("My ip is " + my_ip);
-	}, false);
-
 	function updateStats(packet) {
-	  [packet.saddr, packet.daddr].forEach(function(ip) {
-	    if(stats[ip] !== undefined) return;
+	  [packet.sloc, packet.dloc].forEach(function(country) {
+	    if(countries[country]['stats'] !== undefined) return;
 
-	    stats[ip] = {
+	    countries[country]['stats'] = {
 	      'packets_total': {'in': 0,'out': 0},
 	      'packets_ps': {'in': 0,'out': 0},
 	      'size_total': {'in': 0,'out': 0},
@@ -58,44 +69,44 @@
 
 	    setInterval((function(){
 	      var prev_total_packets = {
-	        'in': stats[ip]['packets_total']['in'], 
-	        'out': stats[ip]['packets_total']['out'] 
+	        'in': countries[country]['stats']['packets_total']['in'], 
+	        'out': countries[country]['stats']['packets_total']['out'] 
 	      }
 
 	      var prev_total_size = {
-	        'in': stats[ip]['size_total']['in'],
-	        'out': stats[ip]['size_total']['out']
+	        'in': countries[country]['stats']['size_total']['in'],
+	        'out': countries[country]['stats']['size_total']['out']
 	      }
 
 	      return function() {
-	        stats[ip]['packets_ps'] = {
-	          'in': stats[ip]['packets_total']['in'] - prev_total_packets.in,
-	          'out': stats[ip]['packets_total']['out'] - prev_total_packets.out
+	        countries[country]['stats']['packets_ps'] = {
+	          'in': countries[country]['stats']['packets_total']['in'] - prev_total_packets.in,
+	          'out': countries[country]['stats']['packets_total']['out'] - prev_total_packets.out
 	        }
 
-	        stats[ip]['size_ps'] = {
-	          'in': stats[ip]['size_total']['in'] - prev_total_size.in,
-	          'out': stats[ip]['size_total']['out'] - prev_total_size.out
+	        countries[country]['stats']['size_ps'] = {
+	          'in': countries[country]['stats']['size_total']['in'] - prev_total_size.in,
+	          'out': countries[country]['stats']['size_total']['out'] - prev_total_size.out
 	        }
 
 	        prev_total_packets = {
-	          'in': stats[ip]['packets_total']['in'], 
-	          'out': stats[ip]['packets_total']['out'] 
+	          'in': countries[country]['stats']['packets_total']['in'], 
+	          'out': countries[country]['stats']['packets_total']['out'] 
 	        }
 
 	        prev_total_size = {
-	          'in': stats[ip]['size_total']['in'],
-	          'out': stats[ip]['size_total']['out']
+	          'in': countries[country]['stats']['size_total']['in'],
+	          'out': countries[country]['stats']['size_total']['out']
 	        }
 	      }
 	    })(), 1000);
 	  });
 
-	  stats[packet.saddr]['packets_total']['out'] += 1;
-	  stats[packet.saddr]['size_total']['out'] += packet.size;
+	  countries[packet.sloc]['stats']['packets_total']['out'] += 1;
+	  countries[packet.sloc]['stats']['size_total']['out'] += packet.size;
 
-	  stats[packet.daddr]['packets_total']['in'] += 1;
-	  stats[packet.daddr]['size_total']['in'] += packet.size;
+	  countries[packet.dloc]['stats']['packets_total']['in'] += 1;
+	  countries[packet.dloc]['stats']['size_total']['in'] += packet.size;
 	}
 
 	function sendPacket(from, to) {

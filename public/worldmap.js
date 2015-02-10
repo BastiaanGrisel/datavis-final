@@ -32,15 +32,7 @@ function setup(width, height) {
 	g = svg.append("g");
 }
 
-d3.json("data/world-topo-min.json", function(error, world) {
-	var countries = topojson.feature(world, world.objects.countries).features;
-	countries.forEach(function(country){
-		country.properties.color = "#CCCCCC";
-	});
-	topo = countries;
-	draw(topo);
 
-});
 
 function draw(topo) {
 	var country = g.selectAll(".country").data(topo);

@@ -54,9 +54,9 @@ getIP(function (err, ip) {
 		}
 
 		try {
-			saddr = geolocation.getGeoDataSync(saddr).country.iso_code;
-			daddr = geolocation.getGeoDataSync(daddr).country.iso_code;
-
+			saddr = geolocation.getGeoDataSync(saddr).country.names.en;
+			daddr = geolocation.getGeoDataSync(daddr).country.names.en;
+			
 			// Dispatch the packet to all connected clients
 			for (client in clients)
 				clients[client].send(JSON.stringify({"type": "packet", "packet": {"sloc": saddr, "dloc": daddr, "size": size}}));
