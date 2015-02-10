@@ -90,6 +90,7 @@
 		var country_interval;
 		if(country_interval === undefined) {
 			country_interval = setInterval((function(){
+			console.log("Starting a countries thread");
 			  var country_prev_total_packets = {
 				'in': countries[country]['stats']['packets_total']['in'], 
 				'out': countries[country]['stats']['packets_total']['out'] 
@@ -136,6 +137,7 @@
 		var client_interval;
 		if(client_interval === undefined) {
 		  client_interval = setInterval((function(){
+			console.log("Starting a clients thread");
 			  var client_prev_total_packets = {
 				'in': clients[address]['stats']['packets_total']['in'], 
 				'out': clients[address]['stats']['packets_total']['out'],
