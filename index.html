@@ -45,6 +45,8 @@
 				country.properties.color = "#CCCCCC";
 				countries[country.properties.name] = country;
 			});
+
+			g.append("circle");
 			
 			draw(_.values(countries));
 
@@ -52,7 +54,6 @@
 				var packet = event.detail;
 
 				updateStats(packet);
-				sendPacket(packet.sloc, packet.dloc);
 				throttle();
 			}, false);
 
@@ -237,20 +238,6 @@
 		$("#ip_list_10_dest").innerHTML = order[9];
 		$("#ip_list_10_ppm").innerHTML = clients[order[9]]['stats']['packets_ps'];
 		$("#ip_list_10_mbps").innerHTML = clients[order[9]]['stats']['size_ps'];
-
-	}
-
-	function sendPacket(from, to) {
-		// console.log("Send packe/t", from, to, countries[from], countries[to], path.centroid(countries[from]), path.centroid(countries[to]));
-
-		// var route = svg.append("path")
-  //          .datum({type: "LineString", coordinates: [path.centroid(countries[from]), path.centroid(countries[to])]})
-  //          .attr("class", "route")
-  //          .attr("d", path);
-  	// var route = svg.append("path")
-   //         .datum({type: "LineString", coordinates: [[50,50], [100,50]]})
-   //         .attr("class", "route")
-   //         .attr("d", path);
 
 	}
   </script>
