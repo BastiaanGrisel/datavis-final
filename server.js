@@ -54,12 +54,12 @@ getIP(function (err, ip) {
 		}
 
 		try {
-			saddr = geolocation.getGeoDataSync(saddr).country.names.en;
-			daddr = geolocation.getGeoDataSync(daddr).country.names.en;
+			sloc = geolocation.getGeoDataSync(saddr).country.names.en;
+			dloc= geolocation.getGeoDataSync(daddr).country.names.en;
 			
 			// Dispatch the packet to all connected clients
 			for (client in clients)
-				clients[client].send(JSON.stringify({"type": "packet", "packet": {"sloc": saddr, "dloc": daddr, "size": size}}));
+				clients[client].send(JSON.stringify({"type": "packet", "packet": {"sloc": sloc, "dloc": dloc, "size": size, "saddr": saddr, "daddr": daddr }}));
 		} catch(err) {
 			console.log("No country found ("+err+")");
 		}

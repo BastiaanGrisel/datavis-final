@@ -11,7 +11,26 @@
 </head>
 <body>
   <div id="map_container"></div>
-  <div id="ip_list"></div>
+  <div id="ip_list">
+	<table>
+		<thead>
+			<th>Destination</th>
+			<th>pps</th>
+			<th>mbps</th>
+		</thead>
+		<tr class="1"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="2"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="3"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="4"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="5"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="6"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="7"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="8"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="9"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="10"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr></tr>
+	</table>
+  </div>
   <div id="intensity_feed"></div>
 
   <script src="worldmap.js"></script>
@@ -19,6 +38,7 @@
 	var my_ip = [];
 	var stats = new Object(); // Holds the stats per IP
 	var countries = {};
+	var clients = {};
 
 	window.onload = function() {
 		d3.json("data/world-topo-min.json", function(error, world) {
@@ -62,33 +82,46 @@
 	  [packet.sloc, packet.dloc].forEach(function(country) {
 	    if(countries[country]['stats'] !== undefined) return;
 
-	    countries[country]['stats'] = {
-	      'packets_total': {'in': 0,'out': 0},
-	      'packets_ps': {'in': 0,'out': 0},
-	      'size_total': {'in': 0,'out': 0},
-	      'size_ps': {'in': 0,'out': 0}
+			countries[country]['stats'] = {
+			  'packets_total': {'in': 0,'out': 0},
+			  'packets_ps': {'in': 0,'out': 0},
+			  'size_total': {'in': 0,'out': 0},
+			  'size_ps': {'in': 0,'out': 0}
+			};
+		
+		
+	    };
+	  [packet.saddr, packet.daddr].forEach(function(address) { 
+		if(clients[address]['stats'] !== undefined) return;
+
+			clients[address]['stats'] = {
+			  'packets_total': {'in': 0,'out': 0},
+			  'packets_ps': {'in': 0,'out': 0},
+			  'size_total': {'in': 0,'out': 0},
+			  'size_ps': {'in': 0,'out': 0}
+			};
 	    };
 
-	    setInterval((function(){
-	      var prev_total_packets = {
+	    var country_interval = setInterval((function(){
+	      var country_prev_total_packets = {
 	        'in': countries[country]['stats']['packets_total']['in'], 
 	        'out': countries[country]['stats']['packets_total']['out'] 
 	      }
 
-	      var prev_total_size = {
+	      var country_prev_total_size = {
 	        'in': countries[country]['stats']['size_total']['in'],
 	        'out': countries[country]['stats']['size_total']['out']
 	      }
 
 	      return function() {
 	        countries[country]['stats']['packets_ps'] = {
-	          'in': countries[country]['stats']['packets_total']['in'] - prev_total_packets.in,
-	          'out': countries[country]['stats']['packets_total']['out'] - prev_total_packets.out
+	          'in': countries[country]['stats']['packets_total']['in'] - country_prev_total_packets.in,
+	          'out': countries[country]['stats']['packets_total']['out'] - country_prev_total_packets.out
 	        }
 
 	        countries[country]['stats']['size_ps'] = {
-	          'in': countries[country]['stats']['size_total']['in'] - prev_total_size.in,
-	          'out': countries[country]['stats']['size_total']['out'] - prev_total_size.out
+	          'in': countries[country]['stats']['size_total']['in'] - country_prev_total_size.in,
+	          'out': countries[country]['stats']['size_total']['out'] - country_prev_total_size.out
 	        }
 
 	        prev_total_packets = {
@@ -103,12 +136,68 @@
 	      }
 	    })(), 1000);
 	  });
+	  var client_interval = setInterval((function(){
+	      var client_prev_total_packets = {
+	        'in': clients[address]['stats']['packets_total']['in'], 
+	        'out': clients[address]['stats']['packets_total']['out'] 
+	      }
+
+	      var client_prev_total_size = {
+	        'in': clients[address]['stats']['size_total']['in'],
+	        'out': clients[address]['stats']['size_total']['out']
+	      }
+
+	      return function() {
+	        clients[address]['stats']['packets_ps'] = {
+	          'in': clients[address]['stats']['packets_total']['in'] - client_prev_total_packets.in,
+	          'out': clients[address]['stats']['packets_total']['out'] - client_prev_total_packets.out
+	        }
+
+	        clients[address]['stats']['size_ps'] = {
+	          'in': clients[address]['stats']['size_total']['in'] - client_prev_total_size.in,
+	          'out': clients[address]['stats']['size_total']['out'] - client_prev_total_size.out
+	        }
+
+	        prev_total_packets = {
+	          'in': clients[address]['stats']['packets_total']['in'], 
+	          'out': clients[address]['stats']['packets_total']['out'] 
+	        }
+
+	        prev_total_size = {
+	          'in': clients[address]['stats']['size_total']['in'],
+	          'out': clients[address]['stats']['size_total']['out']
+	        }
+	      }
+	    })(), 1000);
+	  });
 
 	  countries[packet.sloc]['stats']['packets_total']['out'] += 1;
 	  countries[packet.sloc]['stats']['size_total']['out'] += packet.size;
 
 	  countries[packet.dloc]['stats']['packets_total']['in'] += 1;
 	  countries[packet.dloc]['stats']['size_total']['in'] += packet.size;
+	  
+	  clients[packet.daddr]['stats']['packets_total']['out'] += 1;
+	  clients[packet.daddr]['stats']['size_total']['out'] += packet.size;
+
+	  clients[packet.saddr]['stats']['packets_total']['in'] += 1;
+	  clients[packet.saddr]['stats']['size_total']['in'] += packet.size;
+	  //sort by highest traffic
+	  
+	  //take top 10
+	  
+	  //updateList(top10);
+	}
+
+	function updateList(packet_array) {
+		$("#ip_list.1.dest").html(packet_array[0].dest);
+		$("#ip_list.1.ppm").html(packet_array[0].ppm);
+		$("#ip_list.1.mbps").html(packet_array[0].mbps);
+		$("#ip_list.2.dest").html(packet_array[0].dest);
+		$("#ip_list.2.ppm").html(packet_array[0].ppm);
+		$("#ip_list.2.mbps").html(packet_array[0].mbps);
+		//etc
+	}
 	}
 
 	function sendPacket(from, to) {
