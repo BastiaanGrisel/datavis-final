@@ -18,16 +18,16 @@
 			<th>pps</th>
 			<th>mbps</th>
 		</thead>
-		<tr class="1"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="2"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="3"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="4"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="5"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="6"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="7"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="8"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="9"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
-		<tr class="10"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr1"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr2"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr3"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr4"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr5"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr6"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr7"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr8"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr9"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
+		<tr class="nr10"><td class="dest"></td><td class="ppm"></td><td class="mbps"></td></tr>
 		<tr></tr>
 	</table>
   </div>
@@ -185,14 +185,47 @@
 	  //updateList(top10);
 	}
 
-	function updateList(packet_array) {
-		$("#ip_list.1.dest").html(packet_array[0].dest);
-		$("#ip_list.1.ppm").html(packet_array[0].ppm);
-		$("#ip_list.1.mbps").html(packet_array[0].mbps);
-		$("#ip_list.2.dest").html(packet_array[0].dest);
-		$("#ip_list.2.ppm").html(packet_array[0].ppm);
-		$("#ip_list.2.mbps").html(packet_array[0].mbps);
-		//etc
+	function updateList() {
+		//get order list
+		var order = [];
+		for(var client in clients){
+			order.push(client);
+		};
+		//sort order
+		order.sort(function(a,b){
+			if(clients[a]['stats']['packets_ps']['in'] + clients[a]['stats']['packets_ps']['out'] <
+				clients[b]['stats']['packets_ps']['in'] + clients[b]['stats']['packets_ps']['out'])
+				return -1;
+			if(clients[a]['stats']['packets_ps']['in'] + clients[a]['stats']['packets_ps']['out'] >
+				clients[b]['stats']['packets_ps']['in'] + clients[b]['stats']['packets_ps']['out'])
+				return -1;
+			return 0;
+		});
+		//cut off at 10
+		order = order.slice(0,10);
+		$("#ip_list .nr1 .dest").innerHTML = order[0];
+		$("#ip_list .nr1 .ppm").innerHTML = clients[order[0]]['stats']['packets_ps'];
+		$("#ip_list .nr1 .mbps").innerHTML = clients[order[0]]['stats']['size_ps'];
+
+		$("#ip_list .nr2 .dest").innerHTML = order[1];
+		$("#ip_list .nr2 .ppm").innerHTML = clients[order[1]]['stats']['packets_ps'];
+		$("#ip_list .nr2 .mbps").innerHTML = clients[order[1]]['stats']['size_ps'];
+
+		$("#ip_list .nr3 .dest").innerHTML = order[2];
+		$("#ip_list .nr3 .ppm").innerHTML = clients[order[2]]['stats']['packets_ps'];
+		$("#ip_list .nr3 .mbps").innerHTML = clients[order[2]]['stats']['size_ps'];
+		
+		$("#ip_list .nr4 .dest").innerHTML = order[3];
+		$("#ip_list .nr4 .ppm").innerHTML = clients[order[3]]['stats']['packets_ps'];
+		$("#ip_list .nr4 .mbps").innerHTML = clients[order[3]]['stats']['size_ps'];
+		
+		$("#ip_list .nr5 .dest").innerHTML = order[4];
+		$("#ip_list .nr5 .ppm").innerHTML = clients[order[4]]['stats']['packets_ps'];
+		$("#ip_list .nr5 .mbps").innerHTML = clients[order[4]]['stats']['size_ps'];
+		
+		$("#ip_list .nr6 .dest").innerHTML = order[5];
+		$("#ip_list .nr6 .ppm").innerHTML = clients[order[5]]['stats']['packets_ps'];
+		$("#ip_list .nr6 .mbps").innerHTML = clients[order[5]]['stats']['size_ps'];
 	}
 
 	function sendPacket(from, to) {
