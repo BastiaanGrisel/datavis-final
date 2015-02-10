@@ -218,7 +218,7 @@
 		for(var o in order) {
 			document.getElementById("ip_list_"+(i+1)+"_dest").innerHTML = order[i];
 			document.getElementById("ip_list_"+(i+1)+"_ppm").innerHTML = clients[order[i]]['stats']['packets_ps']['sum'];
-			document.getElementById("ip_list_1"+(i+1)+"_mbps").innerHTML = clients[order[i]]['stats']['size_ps']['sum'];
+			document.getElementById("ip_list_"+(i+1)+"_mbps").innerHTML = clients[order[i]]['stats']['size_ps']['sum'];
 			i++;
 		}
 	}
