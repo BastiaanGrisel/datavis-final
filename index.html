@@ -209,9 +209,9 @@
 		//sort order
 		order.sort(function(a,b){
 			if(clients[a]['stats']['packets_ps']['sum'] < clients[b]['stats']['packets_ps']['sum'])
-				return -1;
-			if(clients[a]['stats']['packets_ps']['sum'] > clients[b]['stats']['packets_ps']['sum'])
 				return 1;
+			if(clients[a]['stats']['packets_ps']['sum'] > clients[b]['stats']['packets_ps']['sum'])
+				return -1;
 			return 0;
 		});
 		//cut off at 10
