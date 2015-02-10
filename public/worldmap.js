@@ -45,7 +45,26 @@ function draw(topo) {
 
 	var country = g.selectAll(".country").data(topo);
 
-	country.enter().insert("path")
+	country
+		.attr("d", path)
+		.attr("id", function(d,i) { return d.id; })
+		.attr("title", function(d,i) { return d.properties.name; })
+		.attr("fill", function(d, i) { 
+			if(d.stats !== undefined) {
+				return country_color(
+					d.stats.packets_total.in + 
+					d.stats.packets_total.out + 
+					// d.stats.packets_ps.in + 
+					// d.stats.packets_ps.out + 
+					d.stats.size_total.in + 
+					d.stats.size_total.out 
+					// d.stats.size_ps.in + 
+					// d.stats.size_ps.out
+					)
+			}
+			return d.properties.color; 
+		})
+	.enter().insert("path")
 		.attr("class", "country")
 		.attr("d", path)
 		.attr("id", function(d,i) { return d.id; })
@@ -95,8 +114,8 @@ function draw(topo) {
 function redraw() {
 	width = document.getElementById('map_container').offsetWidth;
 	height = width / 2;
-	d3.select('svg').remove();
-	setup(width,height);
+	// d3.select('svg').remove();
+	// setup(width,height);
 	draw(_.values(countries));
 }
 
