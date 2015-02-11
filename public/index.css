@@ -69,5 +69,7 @@ div.tooltip {
 }
 
 #legendBar {
-	float:left;
+	position:absolute;
+	bottom:0px;
+	left:0px;
 }
