@@ -1,11 +1,29 @@
 {
-  "name": "nodepcap",
+  "name": "Network_Packet_Visualiser",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "main": "server.js",
+  "dependencies": {
+    "external-ip": "^0.2.3",
+    "http": "^0.0.0",
+    "maxmind-db-reader": "^0.2.0",
+    "node-simple-router": "^0.9.4-2",
+    "pcap": "^2.0.0",
+    "swig": "^1.4.2",
+    "ws": "^0.4.32"
   },
-  "author": "",
-  "license": "ISC"
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BastiaanGrisel/datavis-final.git"
+  },
+  "author": "Bastiaan Grisel and Vikko Smit",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BastiaanGrisel/datavis-final/issues"
+  },
+  "homepage": "https://github.com/BastiaanGrisel/datavis-final"
 }
