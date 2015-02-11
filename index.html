@@ -16,7 +16,7 @@
 		<thead>
 			<th>Destination</th>
 			<th>pps</th>
-			<th>mbps</th>
+			<th>MBps</th>
 		</thead>
 		<tr><td id="ip_list_1_dest"></td><td id="ip_list_1_ppm"></td><td id="ip_list_1_mbps"></td></tr>
 		<tr><td id="ip_list_2_dest"></td><td id="ip_list_2_ppm"></td><td id="ip_list_2_mbps"></td></tr>
@@ -215,7 +215,7 @@
 		for(var o in order) {
 			document.getElementById("ip_list_"+(i+1)+"_dest").innerHTML = order[i];
 			document.getElementById("ip_list_"+(i+1)+"_ppm").innerHTML = clients[order[i]]['stats']['packets_ps']['sum'];
-			document.getElementById("ip_list_"+(i+1)+"_mbps").innerHTML = clients[order[i]]['stats']['size_ps']['sum'];
+			document.getElementById("ip_list_"+(i+1)+"_mbps").innerHTML = Math.round(clients[order[i]]['stats']['size_ps']['sum']/(1024*1024)*100)/100;
 			i++;
 		}
 	}
