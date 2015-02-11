@@ -27,6 +27,15 @@ svg {
 	padding: 20px;
 }
 
+#ip_list table {
+	width: 100%;
+	text-align: center;
+}
+
+#ip_list table th {
+	padding-bottom: 5px;
+}
+
 /*.country {
 	fill: #ccc;
 }*/
