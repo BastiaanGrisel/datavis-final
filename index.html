@@ -30,7 +30,7 @@
 		<tr><td id="ip_list_10_dest"></td><td id="ip_list_10_ppm"></td><td id="ip_list_10_mbps"></td></tr>
 	</table>
   </div>
-
+  <div id="legendBar"></div>
   <script src="worldmap.js"></script>
   <script>
 	var my_ip = [];
@@ -77,6 +77,88 @@
 		    case "ip"     : window.dispatchEvent(new CustomEvent('ip_received', {"detail": msg.ip})); break;
 		  }
 		}
+		
+		initLegend();
+	}
+	
+	function initLegend() {
+		var svgWidth = 400,
+    svgHeight = 70,
+    x1 = 25,
+    barWidth = 350,
+    y1 = 25,
+    barHeight = 40,
+    numberHues = 2;
+    
+	var idGradient = "legendGradient";
+
+	var svgForLegendStuff = d3.select("#legendBar").append("svg")
+								.attr("width", svgWidth)
+								.attr("height", svgHeight);
+
+	//create the empty gradient that we're going to populate later
+	svgForLegendStuff.append("g")
+						.append("defs")
+						.append("linearGradient")
+							.attr("id",idGradient)
+							.attr("x1","0%")
+							.attr("x2","100%")
+							.attr("y1","0%")
+							.attr("y2","0%"); 
+	svgForLegendStuff.append("rect")
+						.attr("fill","url(#" + idGradient + ")")
+						.attr("x",x1)
+						.attr("y",y1)
+						.attr("width",barWidth)
+						.attr("height",barHeight)
+						.attr("rx",15)  //rounded corners, of course!
+						.attr("ry",15);
+
+	//add text on either side of the bar
+
+	var textY = y1 + barHeight/2 + 15;
+	svgForLegendStuff.append("text")
+									.attr("class","legendText")
+									.attr("text-anchor", "middle")
+									.attr("x",55)
+									.attr("y",50)
+									.attr("dy",0)
+									.text("None");
+
+	svgForLegendStuff.append("text")
+									.attr("class","legendText")
+									.attr("text-anchor", "left")
+									.attr("x",barWidth-20)
+									.attr("y",50)
+									.attr("dy",0)
+									.text("High");
+									
+		svgForLegendStuff.append("text")
+									.attr("class","legendText")
+									.attr("text-anchor", "left")
+									.attr("x",barWidth/2-20)
+									.attr("y",20)
+									.attr("dy",0)
+									.text("Network traffic");
+
+	//kind of out of order, but set up the data here 
+	var theData = [];
+	theData.push({"rgb":"#cccccc", "opacity":1, "percent":0.05});     
+	theData.push({"rgb":"#ff0000", "opacity":1, "percent":0.95});   
+
+	var stops = d3.select('#' + idGradient).selectAll('stop')
+                    .data(theData);
+                    
+    stops.enter().append('stop');
+    stops.attr('offset',function(d) {
+					return d.percent;
+		})
+		.attr('stop-color',function(d) {
+					return d.rgb;
+		})
+		.attr('stop-opacity',function(d) {
+					return d.opacity;
+		});
 	}
 
 	function updateStats(packet) {

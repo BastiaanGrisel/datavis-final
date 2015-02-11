@@ -67,3 +67,7 @@ div.tooltip {
 	stroke: red; 
 	stroke-width: 1;
 }
+
+#legendBar {
+	float:left;
+}
