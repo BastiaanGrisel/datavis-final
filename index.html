@@ -81,6 +81,8 @@
 
 	function updateStats(packet) {
 	  [packet.sloc, packet.dloc].forEach(function(country) {
+		if(countries[country] === undefined)
+			console.log("Couldn't match "+country);
 	    if(countries[country]['stats'] !== undefined) return;
 
 			countries[country]['stats'] = {
