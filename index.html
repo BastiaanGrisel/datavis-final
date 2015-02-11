@@ -81,13 +81,7 @@
 
 	function updateStats(packet) {
 	  [packet.sloc, packet.dloc].forEach(function(country) {
-		for(var c in countries) {
-			if(c.indexOf(country)!= -1) {
-				//console.log("Detected "+country+" as "+c);
-				country = c;
-				break;
-			}
-		}
+		country = findCountry(country);
 	    if(countries[country]['stats'] !== undefined) return;
 
 			countries[country]['stats'] = {
@@ -183,6 +177,8 @@
 			})(), 1000);
 		  });
 
+	  packet.sloc = findCountry(packet.sloc);
+	  packet.dloc = findCountry(packet.dloc);
 	  countries[packet.sloc]['stats']['packets_total']['out'] += 1;
 	  countries[packet.sloc]['stats']['size_total']['out'] += packet.size;
 
@@ -200,6 +196,17 @@
 	  clients[packet.saddr]['stats']['size_total']['sum'] += packet.size;
 	  
 	  updateList();
+	}
+	
+	function findCountry(country){
+		for(var c in countries) {
+			if(c.indexOf(country)!= -1) {
+				//console.log("Detected "+country+" as "+c);
+				country = c;
+				break;
+			}
+		}
+		return country;
 	}
 
 	function updateList() {
