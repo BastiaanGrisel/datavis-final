@@ -35,9 +35,7 @@ function setup(width, height) {
 function draw(topo) {
 	var domain_max = d3.max(topo, function(d) { 
 		if(d.stats !== undefined) {
-			return  d.stats.packets_total.in + 
-					d.stats.packets_total.out + 
-					d.stats.size_total.in + 
+			return  d.stats.size_total.in + 
 					d.stats.size_total.out;
 		}
 		return 10000;
@@ -75,8 +73,8 @@ function draw(topo) {
 		.attr("fill", function(d, i) { 
 			if(d.stats !== undefined) {
 				return country_color(
-					d.stats.packets_total.in + 
-					d.stats.packets_total.out + 
+					// d.stats.packets_total.in + 
+					// d.stats.packets_total.out + 
 					// d.stats.packets_ps.in + 
 					// d.stats.packets_ps.out + 
 					d.stats.size_total.in + 
@@ -97,9 +95,12 @@ function draw(topo) {
 		.on("mousemove", function(d,i) {
 			var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
 
+			var total_bytes = d['stats'] !== undefined ? d['stats']['size_total']['in'] + d['stats']['size_total']['out'] : 0;
+
 			tooltip.classed("hidden", false)
 				.attr("style", "left:"+(mouse[0]+offsetL)+"px;top:"+(mouse[1]+offsetT)+"px")
-				.html(d.properties.name);
+				.html(d.properties.name + " (" + Math.round(total_bytes*100/(1024*1024))/100 + " MB)");
+
 		})
 		.on("mouseout",  function(d,i) {
 			tooltip.classed("hidden", true);
