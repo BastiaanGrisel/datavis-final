@@ -94,9 +94,3 @@ div.tooltip {
 	padding: 10px;
 	font-weight: bold;
 }
-
-#legendBar {
-	position:absolute;
-	bottom:0px;
-	left:0px;
-}
