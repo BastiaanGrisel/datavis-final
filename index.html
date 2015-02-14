@@ -20,24 +20,7 @@
 			<th>Total</th>
 		</thead>
 		<tbody>
-			<tr>
-				<td>1</td>
-				<td>Unites States</td>
-				<td>100 MB</td>
-				<td>3 MB/s</td>
-			</tr>
-			<tr>
-				<td>2</td>
-				<td>Ireland</td>
-				<td>43 MB</td>
-				<td>1 MB/s</td>
-			</tr>
-			<tr>
-				<td>3</td>
-				<td>Netherlands</td>
-				<td>2 MB</td>
-				<td>0 MB/s</td>
-			</tr>
+			
 		</tbody>
 	</table>
   </div>
@@ -143,76 +126,15 @@
 			  }
 			})(), 1000);
 		  });
-	  [packet.saddr, packet.daddr].forEach(function(address) { 
-	  if(clients[address] !== undefined) return;
 
-		clients[address] = {stats: {
-		  'packets_total': {'in': 0,'out': 0,'sum': 0},
-		  'packets_ps': {'in': 0,'out': 0,'sum': 0},
-		  'size_total': {'in': 0,'out': 0,'sum': 0},
-		  'size_ps': {'in': 0,'out': 0,'sum': 0}}
-		};
-		setInterval((function(){
-			  var client_prev_total_packets = {
-				'in': clients[address]['stats']['packets_total']['in'], 
-				'out': clients[address]['stats']['packets_total']['out'],
-				'sum': clients[address]['stats']['packets_total']['sum'] 
-			  }
+		packet.sloc = findCountry(packet.sloc);
+		packet.dloc = findCountry(packet.dloc);
+		countries[packet.sloc]['stats']['packets_total']['out'] += 1;
+		countries[packet.sloc]['stats']['size_total']['out'] += packet.size;
 
-			  var client_prev_total_size = {
-				'in': clients[address]['stats']['size_total']['in'],
-				'out': clients[address]['stats']['size_total']['out'],
-				'sum': clients[address]['stats']['packets_total']['sum'] 
-			  }
-
-			  return function() {
-				clients[address]['stats']['packets_ps'] = {
-				  'in': clients[address]['stats']['packets_total']['in'] - client_prev_total_packets.in,
-				  'out': clients[address]['stats']['packets_total']['out'] - client_prev_total_packets.out,
-				  'sum': clients[address]['stats']['packets_total']['in'] + 
-				  clients[address]['stats']['packets_total']['out'] - client_prev_total_packets.sum
-				}
-
-				clients[address]['stats']['size_ps'] = {
-				  'in': clients[address]['stats']['size_total']['in'] - client_prev_total_size.in,
-				  'out': clients[address]['stats']['size_total']['out'] - client_prev_total_size.out,
-				  'sum': clients[address]['stats']['size_total']['in'] + 
-				  clients[address]['stats']['size_total']['out'] - client_prev_total_size.sum
-				}
-
-				client_prev_total_packets = {
-				  'in': clients[address]['stats']['packets_total']['in'], 
-				  'out': clients[address]['stats']['packets_total']['out'],
-				  'sum': clients[address]['stats']['packets_total']['sum']
-				}
-
-				client_prev_total_size = {
-				  'in': clients[address]['stats']['size_total']['in'],
-				  'out': clients[address]['stats']['size_total']['out'],
-				  'sum': clients[address]['stats']['size_total']['sum']
-				}
-			  }
-			})(), 1000);
-		  });
-
-	  packet.sloc = findCountry(packet.sloc);
-	  packet.dloc = findCountry(packet.dloc);
-	  countries[packet.sloc]['stats']['packets_total']['out'] += 1;
-	  countries[packet.sloc]['stats']['size_total']['out'] += packet.size;
-
-	  countries[packet.dloc]['stats']['packets_total']['in'] += 1;
-	  countries[packet.dloc]['stats']['size_total']['in'] += packet.size;
-	  
-	  clients[packet.daddr]['stats']['packets_total']['out'] += 1;
-	  clients[packet.daddr]['stats']['packets_total']['sum'] += 1;
-	  clients[packet.daddr]['stats']['size_total']['out'] += packet.size;
-	  clients[packet.daddr]['stats']['size_total']['sum'] += packet.size;
-
-	  clients[packet.saddr]['stats']['packets_total']['in'] += 1;
-	  clients[packet.saddr]['stats']['packets_total']['sum'] += 1;
-	  clients[packet.saddr]['stats']['size_total']['in'] += packet.size;
-	  clients[packet.saddr]['stats']['size_total']['sum'] += packet.size;
-	  
+		countries[packet.dloc]['stats']['packets_total']['in'] += 1;
+		countries[packet.dloc]['stats']['size_total']['in'] += packet.size;
+		  
 	  updateList();
 	}
 	
@@ -227,29 +149,47 @@
 		return country;
 	}
 
-	function updateList() {
-		//get order list
-		var order = [];
-		for(var client in clients){
-			order.push(client);
-		};
-		//sort order
-		order.sort(function(a,b){
-			if(clients[a]['stats']['packets_ps']['sum'] < clients[b]['stats']['packets_ps']['sum'])
-				return 1;
-			if(clients[a]['stats']['packets_ps']['sum'] > clients[b]['stats']['packets_ps']['sum'])
-				return -1;
-			return 0;
+	function updateList() {	
+		var sorted_countries = _.values(countries).filter(function(country){ 
+			return country['stats'] !== undefined; 
 		});
-		//cut off at 10
-		order = order.slice(0,10);
-		var i = 0;
-		for(var o in order) {
-			document.getElementById("ip_list_"+(i+1)+"_dest").innerHTML = order[i];
-			document.getElementById("ip_list_"+(i+1)+"_ppm").innerHTML = clients[order[i]]['stats']['packets_ps']['sum'];
-			document.getElementById("ip_list_"+(i+1)+"_mbps").innerHTML = Math.round(clients[order[i]]['stats']['size_ps']['sum']/(1024*1024)*100)/100;
-			i++;
-		}
+
+		sorted_countries = _.sortBy(sorted_countries, function(country) {
+			return country['stats'] !== undefined ? 
+				-1 * (country['stats']['size_ps']['in'] + country['stats']['size_ps']['out']) :
+				0;
+		});
+
+		var rows = d3.select("#top_countries tbody").selectAll("tr")
+			.data(sorted_countries.slice(0,10))
+			
+		rows.enter().append("tr");
+		rows.exit().remove();
+
+		var cells = rows.selectAll("td")
+			.data(function(country, i) {
+				return [
+					i+1, 
+					country.properties.name, 
+					B2Kb(country['stats']['size_ps']['in'] + country['stats']['size_ps']['out']) + " Kbit/s", 
+					B2MB(country['stats']['size_total']['in'] + country['stats']['size_total']['out']) + " MB"
+					];
+			}).html(function(data){ return data; });
+
+
+		cells.enter()
+	        .append("td")
+	        .html(function(data){ return data; });
+	    
+	    cells.exit().remove();
+	}
+
+	function B2MB(bytes) {
+		return Math.round(bytes/(1024*1024)*1000)/1000;
+	}
+
+	function B2Kb(bytes) {
+		return Math.round(bytes/1024*10)/10;
 	}
   </script>
 </body>

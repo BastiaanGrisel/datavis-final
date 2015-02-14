@@ -42,7 +42,7 @@ function draw(topo) {
 	});
 
 	country_color.domain([0, domain_max]);
-	d3.select("#legend #legend_max span").text(Math.round(domain_max/(1024*1024)*100)/100);
+	d3.select("#legend #legend_max span").text(B2MB(domain_max));
 
 	var country = g.selectAll(".country").data(topo);
 
@@ -101,7 +101,7 @@ function draw(topo) {
 
 			tooltip.classed("hidden", false)
 				.attr("style", "left:"+(mouse[0]+offsetL)+"px;top:"+(mouse[1]+offsetT)+"px")
-				.html(d.properties.name + " (" + Math.round(total_bytes*100/(1024*1024))/100 + " MB)");
+				.html(d.properties.name + " (" + B2MB(total_bytes) + " MB)");
 
 		})
 		.on("mouseout",  function(d,i) {
