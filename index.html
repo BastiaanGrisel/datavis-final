@@ -42,11 +42,11 @@
 	var client_interval;
 
 	window.onload = function() {
-		d3.json("data/world-topo-min.json", function(error, world) {
+		d3.json("data/countries.topo.json", function(error, world) {
 			list = topojson.feature(world, world.objects.countries).features;
 			list.forEach(function(country){
 				country.properties.color = "#CCCCCC";
-				countries[country.properties.name] = country;
+				countries[country.id] = country;
 			});
 			
 			draw(_.values(countries));
@@ -57,29 +57,22 @@
 				updateStats(packet);
 				throttle();
 			}, false);
-
-			window.addEventListener('ip_received', function (event) {
-				var packet = event.detail;
-
-				my_ip = packet;
-			}, false);
 		});
 
 		var ws = new WebSocket('ws://localhost:8080');
 
 		ws.onmessage = function(event) {
 		  var msg = JSON.parse(event.data);
-
-		  switch(msg.type) {
-		    case "packet" : window.dispatchEvent(new CustomEvent('packet_received', {"detail": msg.packet})); break;
-		    case "ip"     : window.dispatchEvent(new CustomEvent('ip_received', {"detail": msg.ip})); break;
-		  }
+		  window.dispatchEvent(new CustomEvent('packet_received', {"detail": msg.packet}));
 		}
 	}
 	
 	function updateStats(packet) {
-	  [packet.sloc, packet.dloc].forEach(function(country) {
-		country = findCountry(country);
+		if(countries[packet.sloc.country] === undefined || 
+			countries[packet.dloc.country] === undefined) 
+			return; // Country cannot be found
+
+	  [packet.sloc.country, packet.dloc.country].forEach(function(country) {
 	    if(countries[country]['stats'] !== undefined) return;
 
 			countries[country]['stats'] = {
@@ -124,13 +117,11 @@
 			})(), 1000);
 		  });
 
-		packet.sloc = findCountry(packet.sloc);
-		packet.dloc = findCountry(packet.dloc);
-		countries[packet.sloc]['stats']['packets_total']['out'] += 1;
-		countries[packet.sloc]['stats']['size_total']['out'] += packet.size;
+		countries[packet.sloc.country]['stats']['packets_total']['out'] += 1;
+		countries[packet.sloc.country]['stats']['size_total']['out'] += packet.size;
 
-		countries[packet.dloc]['stats']['packets_total']['in'] += 1;
-		countries[packet.dloc]['stats']['size_total']['in'] += packet.size;
+		countries[packet.dloc.country]['stats']['packets_total']['in'] += 1;
+		countries[packet.dloc.country]['stats']['size_total']['in'] += packet.size;
 		  
 	  updateList();
 	}

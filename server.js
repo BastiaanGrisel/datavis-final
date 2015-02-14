@@ -4,11 +4,12 @@ var WebSocketServer = require('ws').Server,
  	pcap 	= require('pcap'),
 	swig 	= require("swig"),
 	http 	= require("http"),
-	geo_reader = require('maxmind-db-reader'),
+	// geo_reader = require('maxmind-db-reader'),
+	geoip = require('geoip-lite'),
 	getIP = require('external-ip')();
 
 var session = pcap.createSession('', 'tcp'),
-	geolocation = geo_reader.openSync('./public/data/GeoLite2-Country.mmdb'),
+	// geolocation = geo_reader.openSync('./public/data/GeoLite2-Country.mmdb'),
 	router 	= new Router(),
 	server 	= http.createServer(router),
 	wss 	= new WebSocketServer({port: 8080}),
@@ -27,7 +28,7 @@ getIP(function (err, ip) {
     // Websocket server code
 	wss.on('connection', function(ws) {
 		// First send the client the IP address(es) of the server
-		ws.send(JSON.stringify({"type": "ip", "ip": external_ip}));
+		// ws.send(JSON.stringify({"type": "ip", "ip": external_ip}));
 
 		clients.push(ws);
 		log_clients(); // Display the number of connected clients in the terminal
@@ -53,16 +54,23 @@ getIP(function (err, ip) {
 			daddr = external_ip;
 		}
 
-		try {
-			sloc = geolocation.getGeoDataSync(saddr).country.names.en;
-			dloc= geolocation.getGeoDataSync(daddr).country.names.en;
-			
-			// Dispatch the packet to all connected clients
-			for (client in clients)
-				clients[client].send(JSON.stringify({"type": "packet", "packet": {"sloc": sloc, "dloc": dloc, "size": size, "saddr": saddr, "daddr": daddr }}));
-		} catch(err) {
-			console.log("No country found ("+err+")");
-		}
+		sloc = geoip.lookup(saddr);
+		dloc = geoip.lookup(daddr);
+		
+		if(sloc === null || dloc === null) return;
+
+		// Dispatch the packet to all connected clients
+		for (client in clients)
+			clients[client].send(JSON.stringify({
+				"type": "packet", 
+				"packet": {
+					"sloc": sloc, 
+					"dloc": dloc, 
+					"size": size, 
+					"saddr": saddr, 
+					"daddr": daddr 
+				}
+			}));
 	});
 
     server.listen(80);
