@@ -152,7 +152,7 @@ function throttle() {
 }
 
 //function to add points and text to the map (used in plotting capitals)
-function addpoint(lat,lon,text) {
+function addpoint(lat,lon) {
 	var gpoint = g.append("g").attr("class", "gpoint");
 	var x = projection([lat,lon])[0];
 	var y = projection([lat,lon])[1];
@@ -162,14 +162,4 @@ function addpoint(lat,lon,text) {
 	.attr("cy", y)
 	.attr("class","point")
 	.attr("r", 1.5);
-
-  //conditional in case a point has no associated text
-  if(text.length>0){
-
-  	gpoint.append("text")
-  	.attr("x", x+2)
-  	.attr("y", y+2)
-  	.attr("class","text")
-  	.text(text);
-  }
 }

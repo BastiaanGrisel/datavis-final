@@ -55,6 +55,7 @@
 				var packet = event.detail;
 
 				updateStats(packet);
+				animatePacket(packet);
 				throttle();
 			}, false);
 		});
@@ -177,6 +178,11 @@
 
 	function B2Kb(bytes) {
 		return Math.round(bytes/1024*10)/10;
+	}
+
+	function animatePacket(packet) {
+		addpoint(packet.sloc.ll[1], packet.sloc.ll[0], "")
+		addpoint(packet.dloc.ll[1], packet.dloc.ll[0], "")
 	}
   </script>
 </body>
