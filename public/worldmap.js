@@ -157,9 +157,9 @@ function addpoint(lat,lon) {
 	var x = projection([lat,lon])[0];
 	var y = projection([lat,lon])[1];
 
-	gpoint.append("svg:circle")
-	.attr("cx", x)
-	.attr("cy", y)
-	.attr("class","point")
-	.attr("r", 1.5);
+	return gpoint.append("svg:circle")
+		.attr("cx", x)
+		.attr("cy", y)
+		.attr("class","point")
+		.attr("r", 4);
 }

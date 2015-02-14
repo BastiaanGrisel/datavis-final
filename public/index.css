@@ -8,7 +8,7 @@ html, body {
 }
 
 svg {
-	shape-rendering: geometricPrecision;
+	/*shape-rendering: geometricPrecision;*/
 	vertical-align:top;
 }
 
@@ -40,6 +40,13 @@ svg {
 /*.country {
 	fill: #ccc;
 }*/
+
+.point {
+	fill: none;
+	stroke: black;
+	stroke-width: 0.5;
+	shape-rendering: auto !important;
+}
 
 .country:hover {
   fill: #aaa;

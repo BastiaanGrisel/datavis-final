@@ -40,6 +40,8 @@
 	var clients = {};
 	var country_interval;
 	var client_interval;
+	var max_packet_size = 1;
+	var locations = {};
 
 	window.onload = function() {
 		d3.json("data/countries.topo.json", function(error, world) {
@@ -181,8 +183,8 @@
 	}
 
 	function animatePacket(packet) {
-		// addpoint(packet.sloc.ll[1], packet.sloc.ll[0], "")
-		// addpoint(packet.dloc.ll[1], packet.dloc.ll[0], "")
+		if(packet.size > max_packet_size)
+			max_packet_size = packet.size;
 
 		var route = g.append("path")
                .datum({type: "LineString", coordinates: [packet.sloc.ll.reverse(), packet.dloc.ll.reverse()]})
@@ -190,13 +192,17 @@
                .attr("d", path);
 
         var circle = g.append("rect")
-        	.attr("height", Math.round((packet.size*1000)/domain_max))
+        	.attr("height", Math.round((packet.size*100)/max_packet_size))
         	.attr("width", 20); 	     
 
         transition(circle, route);
 
-
-  		// console.log(Math.round((packet.size/domain_max)*10), packet.size, domain_max, packet.size/domain_max, packet.size/domain_max*500)
+        // Also add a stationary circle to the map to mark the location of the packet
+        if(locations[packet.sloc.ll.reverse()] === undefined)
+        	locations[packet.sloc.ll.reverse()] = addpoint(packet.sloc.ll[0], packet.sloc.ll[1]);
+        	
+        if(locations[packet.dloc.ll.reverse()] === undefined)
+        	locations[packet.dloc.ll.reverse()] = addpoint(packet.dloc.ll[0], packet.dloc.ll[1]);
 	}
 
 	 function transition(plane, route) {
@@ -222,7 +228,7 @@
 	        var y = p2.y - p.y;
 	        var r = 90 - Math.atan2(-y, x) * 180 / Math.PI;
 
-	        var s = Math.min(Math.sin(Math.PI * t) * 0.7, 0.3);
+	        var s = Math.min(Math.sin(Math.PI * t), 0.5);
 
 	        return "translate(" + p.x + "," + p.y + ") scale(" + s + ") rotate(" + r + ")";
 	      }
