@@ -110,11 +110,6 @@ function draw(topo) {
 		.on("click", function(country,i) {
 			filter_country(country);
 		});
-
-	// var route = svg.append("path")
- //           .datum({type: "LineString", coordinates: [[50,50], [100,50]]})
- //           .attr("class", "route")
- //           .attr("d", path);
 }
 
 function redraw() {
@@ -154,11 +149,6 @@ function throttle() {
 	throttleTimer = window.setTimeout(function() {
 		redraw();
 	}, 200);
-}
-
-//geo translation on mouse click in map
-function filter_country(country) {
-	console.log(country);
 }
 
 //function to add points and text to the map (used in plotting capitals)

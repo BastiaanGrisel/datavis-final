@@ -48,8 +48,6 @@
 				country.properties.color = "#CCCCCC";
 				countries[country.properties.name] = country;
 			});
-
-			g.append("circle");
 			
 			draw(_.values(countries));
 
@@ -64,7 +62,6 @@
 				var packet = event.detail;
 
 				my_ip = packet;
-				console.log("My ip is " + my_ip);
 			}, false);
 		});
 
@@ -140,8 +137,7 @@
 	
 	function findCountry(country){
 		for(var c in countries) {
-			if(c.indexOf(country)!= -1) {
-				//console.log("Detected "+country+" as "+c);
+			if(c.indexOf(country) != -1) {
 				country = c;
 				break;
 			}
