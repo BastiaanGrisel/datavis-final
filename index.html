@@ -11,7 +11,7 @@
 </head>
 <body>
   <div id="map_container"></div>
-  <div id="ip_list">
+  <div id="ip_list" style="display:none">
 	<table>
 		<thead>
 			<th>Destination</th>
@@ -30,7 +30,15 @@
 		<tr><td id="ip_list_10_dest"></td><td id="ip_list_10_ppm"></td><td id="ip_list_10_mbps"></td></tr>
 	</table>
   </div>
-  <div id="legendBar"></div>
+  <div id="legendBar" style="display: none"></div>
+  <div id="legend">
+  	<div id="title">Cumulative size of information in megabytes going in and out of a country</div>
+  	<div id="legend_bar">
+	  	<div id="legend_min" style="float: left"><span>0</span> MB</div>
+	  	<div id="legend_max" style="float: right"><span>1000</span> MB</div>
+	  	<div style="clear:both; padding: 0; margin: 0"></div> <!-- Stupid clearfixes, it's 2015 for god's sake -->
+  	</div>
+  </div>
   <script src="worldmap.js"></script>
   <script>
 	var my_ip = [];
@@ -111,8 +119,6 @@
 						.attr("y",y1)
 						.attr("width",barWidth)
 						.attr("height",barHeight)
-						.attr("rx",15)  //rounded corners, of course!
-						.attr("ry",15);
 
 	//add text on either side of the bar
 

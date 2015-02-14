@@ -33,7 +33,7 @@ function setup(width, height) {
 }
 
 function draw(topo) {
-	country_color.domain([0, d3.max(topo, function(d) { 
+	var domain_max = d3.max(topo, function(d) { 
 		if(d.stats !== undefined) {
 			return  d.stats.packets_total.in + 
 					d.stats.packets_total.out + 
@@ -41,7 +41,10 @@ function draw(topo) {
 					d.stats.size_total.out;
 		}
 		return 10000;
-	})]);
+	});
+
+	country_color.domain([0, domain_max]);
+	d3.select("#legend #legend_max span").text(Math.round(domain_max/(1024*1024)*100)/100);
 
 	var country = g.selectAll(".country").data(topo);
 

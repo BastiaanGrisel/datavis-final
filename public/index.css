@@ -9,6 +9,7 @@ html, body {
 
 svg {
 	shape-rendering: geometricPrecision;
+	vertical-align:top;
 }
 
 /* Containers */
@@ -66,6 +67,32 @@ div.tooltip {
 	fill: none;
 	stroke: red; 
 	stroke-width: 1;
+}
+
+/* Legend */
+#legend {
+	width: 400px;
+
+	margin: 0 0 10px 10px;
+
+	position: absolute;
+	bottom: 0;
+	left: 0;
+
+	text-align: center;
+}
+
+#legend #title {
+	margin: 10px;
+}
+
+#legend #legend_bar {
+	background: linear-gradient(to right, #ccc, red);
+}
+
+#legend #legend_bar div {
+	padding: 10px;
+	font-weight: bold;
 }
 
 #legendBar {
