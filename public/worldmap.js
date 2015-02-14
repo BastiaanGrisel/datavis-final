@@ -85,6 +85,8 @@ function draw(topo) {
 			}
 			return d.properties.color; 
 		})
+		.attr("stroke", "white")
+		.attr("stroke-width", 0.4)
 
 	// offsets for tooltips
 	var offsetL = document.getElementById('map_container').offsetLeft+20;
@@ -143,7 +145,7 @@ function move() {
 	g.attr("transform", "translate(" + t + ")scale(" + s + ")");
 
 	//adjust the country hover stroke width based on zoom level
-	d3.selectAll(".country").style("stroke-width", 1.5 / s);
+	d3.selectAll(".country").style("stroke-width", 0.4 / s);
 }
 
 var throttleTimer;
