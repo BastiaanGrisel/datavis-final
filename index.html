@@ -181,9 +181,54 @@
 	}
 
 	function animatePacket(packet) {
-		addpoint(packet.sloc.ll[1], packet.sloc.ll[0], "")
-		addpoint(packet.dloc.ll[1], packet.dloc.ll[0], "")
+		// addpoint(packet.sloc.ll[1], packet.sloc.ll[0], "")
+		// addpoint(packet.dloc.ll[1], packet.dloc.ll[0], "")
+
+		var route = g.append("path")
+               .datum({type: "LineString", coordinates: [packet.sloc.ll.reverse(), packet.dloc.ll.reverse()]})
+               .attr("class", "route")
+               .attr("d", path);
+
+        var circle = g.append("rect")
+        	.attr("height", Math.round((packet.size*1000)/domain_max))
+        	.attr("width", 20); 	     
+
+        transition(circle, route);
+
+
+  		// console.log(Math.round((packet.size/domain_max)*10), packet.size, domain_max, packet.size/domain_max, packet.size/domain_max*500)
 	}
+
+	 function transition(plane, route) {
+	    var l = route.node().getTotalLength();
+	    plane.transition()
+	        .duration(l * 5)
+	        .attrTween("transform", delta(plane, route.node()))
+	        .each("end", function() { route.remove(); })
+	        .remove();
+	  }
+	  
+	  function delta(plane, path) {
+	    var l = path.getTotalLength();
+	    var plane = plane;
+	    return function(i) {
+	      return function(t) {
+	        var p = path.getPointAtLength(t * l);
+
+	        var t2 = Math.min(t + 0.05, 1);
+	        var p2 = path.getPointAtLength(t2 * l);
+
+	        var x = p2.x - p.x;
+	        var y = p2.y - p.y;
+	        var r = 90 - Math.atan2(-y, x) * 180 / Math.PI;
+
+	        var s = Math.min(Math.sin(Math.PI * t) * 0.7, 0.3);
+
+	        return "translate(" + p.x + "," + p.y + ") scale(" + s + ") rotate(" + r + ")";
+	      }
+	    }
+	  }
+
   </script>
 </body>
 </html>

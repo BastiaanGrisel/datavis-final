@@ -7,7 +7,7 @@ var zoom = d3.behavior.zoom()
 	.scaleExtent([1, 9])
 	.on("zoom", move);
 
-var topo,projection,path,svg,g;
+var topo,projection,path,svg,g,domain_max;
 
 var country_color = d3.scale.linear().domain([0, 10000]).range(["#ccc", "red"]);
 
@@ -33,7 +33,7 @@ function setup(width, height) {
 }
 
 function draw(topo) {
-	var domain_max = d3.max(topo, function(d) { 
+	domain_max = d3.max(topo, function(d) { 
 		if(d.stats !== undefined) {
 			return  d.stats.size_total.in + 
 					d.stats.size_total.out;
