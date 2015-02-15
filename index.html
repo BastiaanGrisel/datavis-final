@@ -191,8 +191,8 @@
                .attr("d", path);
 
         var circle = g.append("rect")
-        	.attr("height", Math.round((packet.size*100)/max_packet_size))
-        	.attr("width", 20); 	     
+        	.attr("height", ~~Math.min(route.node().getTotalLength(), (packet.size*100)/max_packet_size))
+        	.attr("width", 5); 	     
 
         transition(circle, route);
 

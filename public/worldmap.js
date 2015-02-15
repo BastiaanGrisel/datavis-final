@@ -17,7 +17,7 @@ setup(map_width, map_height);
 
 function setup(width, height) {
 	projection = d3.geo.mercator()
-		.translate([width/2, (height/2)])
+		.translate([width/2, (height/2+150)])
 		.scale( width / 2 / Math.PI);
 
 	path = d3.geo.path().projection(projection);
