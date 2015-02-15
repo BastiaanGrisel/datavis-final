@@ -142,7 +142,13 @@
 	function updateList() {	
 		var sorted_countries = _.values(countries).filter(function(country){ 
 			return country['stats'] !== undefined && 
-				country['stats']['size_ps']['in'] + country['stats']['size_ps']['out'] > 0; 
+				country['stats']['size_total']['in'] + country['stats']['size_total']['out'] > 0; 
+		});
+
+		sorted_countries = _.sortBy(sorted_countries, function(country) {
+			return country['stats'] !== undefined ? 
+				-1 * (country['stats']['size_total']['in'] + country['stats']['size_total']['out']) :
+				0;
 		});
 
 		sorted_countries = _.sortBy(sorted_countries, function(country) {
