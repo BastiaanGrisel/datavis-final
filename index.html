@@ -197,15 +197,12 @@
         transition(circle, route);
 
         // Also add a stationary circle to the map to mark the location of the packet
-        if(locations.indexOf(packet.sloc.city) == -1 && packet.sloc.city != "") {
-        	addpoint(packet.sloc.ll[0], packet.sloc.ll[1], packet.sloc.city)
-        	locations.push(packet.sloc.city);
-        }
-
-        if(locations.indexOf(packet.dloc.city) == -1 && packet.dloc.city != "") {
-        	addpoint(packet.dloc.ll[0], packet.dloc.ll[1], packet.dloc.city)
-        	locations.push(packet.dloc.city);
-        }
+        [packet.sloc, packet.dloc].forEach(function(loc) {
+        	if(!_.some(locations, function(el) { return el[0] === loc.ll[0] && el[1] === loc.ll[1]; })) {
+        		addpoint(loc.ll[0], loc.ll[1], loc.city);
+        		locations.push(loc.ll);
+        	}
+        });
 	}
 
 	 function transition(plane, route) {

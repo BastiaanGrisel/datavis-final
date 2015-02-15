@@ -96,7 +96,7 @@ function draw(topo) {
 	country
 		.on("mousemove", function(d,i) {			
 			var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
-
+			
 			var total_bytes = d['stats'] !== undefined ? d['stats']['size_total']['in'] + d['stats']['size_total']['out'] : 0;
 
 			tooltip.classed("hidden", false)
@@ -112,6 +112,7 @@ function draw(topo) {
 
 	city
 		.on("mousemove", function(d,i) {
+			if(d.length === 0) return;
 			var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
 
 			tooltip.classed("hidden", false)
