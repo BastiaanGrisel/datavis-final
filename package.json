@@ -4,6 +4,7 @@
   "main": "server.js",
   "dependencies": {
     "external-ip": "^0.2.3",
+    "geoip-lite": "^1.1.5",
     "http": "^0.0.0",
     "maxmind-db-reader": "^0.2.0",
     "node-simple-router": "^0.9.4-2",
@@ -25,5 +26,6 @@
   "bugs": {
     "url": "https://github.com/BastiaanGrisel/datavis-final/issues"
   },
-  "homepage": "https://github.com/BastiaanGrisel/datavis-final"
+  "homepage": "https://github.com/BastiaanGrisel/datavis-final",
+  "description": "Please look at the wiki at https://github.com/BastiaanGrisel/datavis-final/wiki for the documentation."
 }
