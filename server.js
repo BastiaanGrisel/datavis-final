@@ -56,7 +56,7 @@ getIP(function (err, ip) {
 
 		sloc = geoip.lookup(saddr);
 		dloc = geoip.lookup(daddr);
-		
+
 		if(sloc === null || dloc === null) return;
 
 		// Dispatch the packet to all connected clients

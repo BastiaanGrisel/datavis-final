@@ -9,7 +9,7 @@ var zoom = d3.behavior.zoom()
 
 var topo,projection,path,svg,g,domain_max;
 
-var country_color = d3.scale.linear().domain([0, 10000]).range(["#ccc", "red"]);
+var country_color = d3.scale.linear().domain([0, 10000]).range(["#DDCCCC", "red"]);
 
 var tooltip = d3.select("#map_container").append("div").attr("class", "tooltip hidden");
 
@@ -94,7 +94,7 @@ function draw(topo) {
 
 	// tooltips
 	country
-		.on("mousemove", function(d,i) {
+		.on("mousemove", function(d,i) {			
 			var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
 
 			var total_bytes = d['stats'] !== undefined ? d['stats']['size_total']['in'] + d['stats']['size_total']['out'] : 0;
@@ -107,9 +107,20 @@ function draw(topo) {
 		.on("mouseout",  function(d,i) {
 			tooltip.classed("hidden", true);
 		})
-		.on("click", function(country,i) {
-			filter_country(country);
-		});
+
+	var city = g.selectAll(".city");
+
+	city
+		.on("mousemove", function(d,i) {
+			var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
+
+			tooltip.classed("hidden", false)
+				.attr("style", "left:"+(mouse[0]+offsetL)+"px;top:"+(mouse[1]+offsetT)+"px")
+				.html(d);
+		})
+		.on("mouseout",  function(d,i) {
+			tooltip.classed("hidden", true);
+		})
 }
 
 function redraw() {
@@ -126,12 +137,12 @@ function move() {
 	zscale = s;
 	var h = map_height/4;
 
-	t[0] = Math.min(
+	t[0] = ~~Math.min(
 		(map_width/map_height)  * (s - 1), 
 		Math.max( map_width * (1 - s), t[0] )
 		);
 
-	t[1] = Math.min(
+	t[1] = ~~Math.min(
 		h * (s - 1) + h * s, 
 		Math.max(map_height  * (1 - s) - h * s, t[1])
 		);
@@ -143,23 +154,25 @@ function move() {
 	d3.selectAll(".country").style("stroke-width", 0.4 / s);
 }
 
-var throttleTimer;
+var throttleTimer = null;
 function throttle() {
-	window.clearTimeout(throttleTimer);
-	throttleTimer = window.setTimeout(function() {
-		redraw();
-	}, 200);
+	if(throttleTimer == null)
+		throttleTimer = window.setTimeout(function() {
+			redraw();
+			throttleTimer = null;
+		}, 200);
 }
 
 //function to add points and text to the map (used in plotting capitals)
-function addpoint(lat,lon) {
-	var gpoint = g.append("g").attr("class", "gpoint");
+function addpoint(lat,lon,text) {
+	var gpoint = g.append("g")
 	var x = projection([lat,lon])[0];
 	var y = projection([lat,lon])[1];
 
-	return gpoint.append("svg:circle")
-		.attr("cx", x)
-		.attr("cy", y)
-		.attr("class","point")
-		.attr("r", 4);
+	gpoint.append("svg:circle")
+		.data([text])
+		.attr("cx", ~~x)
+		.attr("cy", ~~y)
+		.attr("class","city")
+		.attr("r", 4);	
 }

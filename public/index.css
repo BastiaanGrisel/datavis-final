@@ -41,14 +41,14 @@ svg {
 	fill: #ccc;
 }*/
 
-.point {
-	fill: none;
+.city {
+	fill: rgba(0,0,0,0);
 	stroke: black;
 	stroke-width: 0.5;
 	shape-rendering: auto !important;
 }
 
-.country:hover {
+.country:hover, .city:hover {
   fill: #aaa;
   cursor: pointer;
 }
@@ -73,14 +73,15 @@ div.tooltip {
 .route {
 	fill: none;
 	/*stroke: red; */
-	/*stroke-width: 1;*/
+	/*stroke-width: 0.1;*/
+	/*stroke-dasharray: 10,10;*/
 }
 
 /* Top countries */
 #top_countries {
 	position: absolute;
 
-	top: 10px;
+	bottom: 10px;
 	right: 10px;
 
 	background: rgba(255,255,255,0.9);

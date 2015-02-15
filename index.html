@@ -41,7 +41,7 @@
 	var country_interval;
 	var client_interval;
 	var max_packet_size = 1;
-	var locations = {};
+	var locations = [];
 
 	window.onload = function() {
 		d3.json("data/countries.topo.json", function(error, world) {
@@ -166,7 +166,6 @@
 					];
 			}).html(function(data){ return data; });
 
-
 		cells.enter()
 	        .append("td")
 	        .html(function(data){ return data; });
@@ -198,11 +197,15 @@
         transition(circle, route);
 
         // Also add a stationary circle to the map to mark the location of the packet
-        if(locations[packet.sloc.ll.reverse()] === undefined)
-        	locations[packet.sloc.ll.reverse()] = addpoint(packet.sloc.ll[0], packet.sloc.ll[1]);
-        	
-        if(locations[packet.dloc.ll.reverse()] === undefined)
-        	locations[packet.dloc.ll.reverse()] = addpoint(packet.dloc.ll[0], packet.dloc.ll[1]);
+        if(locations.indexOf(packet.sloc.city) == -1 && packet.sloc.city != "") {
+        	addpoint(packet.sloc.ll[0], packet.sloc.ll[1], packet.sloc.city)
+        	locations.push(packet.sloc.city);
+        }
+
+        if(locations.indexOf(packet.dloc.city) == -1 && packet.dloc.city != "") {
+        	addpoint(packet.dloc.ll[0], packet.dloc.ll[1], packet.dloc.city)
+        	locations.push(packet.dloc.city);
+        }
 	}
 
 	 function transition(plane, route) {
@@ -228,9 +231,9 @@
 	        var y = p2.y - p.y;
 	        var r = 90 - Math.atan2(-y, x) * 180 / Math.PI;
 
-	        var s = Math.min(Math.sin(Math.PI * t), 0.5);
+	        var s = Math.min(Math.sin(Math.PI * t), 0.4);
 
-	        return "translate(" + p.x + "," + p.y + ") scale(" + s + ") rotate(" + r + ")";
+	        return "translate(" + ~~p.x + "," + ~~p.y + ") scale(" + s + ") rotate(" + r + ")";
 	      }
 	    }
 	  }
